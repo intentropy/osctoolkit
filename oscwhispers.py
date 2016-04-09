@@ -4,22 +4,12 @@ OSC Whispers
     oscwhispers.py
       Written by: Shane Huter
 
-        This software listens on a port for incoming OSC messages, and splits
-        the path by "/".  Then it takes the 1st directory in the path and uses
-        that as an indicator to forward the oscmessage to a different ip:port
-        or even multiple different IPs:PORTs
-        
-        There should be a file automaticaly loaded (specified in config) that
-        is used as a database as to where the forwarding address are based on
-        the path.
-            -1st arg is the name of 1st directory in path
-            -2nd arg is either + or -
-                + means keep the 1st directory in the path when forwarding
-                - means to remove 1st dir in the path when forwarding
-                   this way if a device does not have a unique 1st dir in
-                   the path one can be specified to OSC Whispers and then
-                   removed after forwarding.
-            -3rd and on arg is the IP:PORT(s) to forward to
+    Required Dependencies:  python >= 3.5, pyliblo
+
+      This python script, and all of OSC_Tools is licensed
+      under the GNU GPL version 3
+
+      This program forwards OSC Messages.
 '''
 
 import sys, liblo
