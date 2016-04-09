@@ -22,18 +22,21 @@ IP_INDEX=0
 PORT_PATH_INDEX=1
 PORT_INDEX=0
 FIRST_PATH_DIR_INDEX=1
+ERROR=255
+CLEAN=0
 
 #OSC CONST
 LAST_OSC_ARG_INDEX=0
 TOTAL_NON_OSC_ARG_INDICES=2
 
-#program vars
-helpAndExit=False
-
 #osc Vars
 oscPathDir=[]
-oscPath='/'
+oscPath=''
 oscArgList=[]
+
+def helpAndExit():
+    print('Help File')
+    sys.exit(CLEAN)
 
 def sendOSC(target, path, args):
     #send osc messages in this function
@@ -55,13 +58,12 @@ def sendOSC(target, path, args):
     elif len(args)==8:
         liblo.send(target, path, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
     else:
-        global helpAndExit
-        helpAndExit=True
+        helpAndExit()
     return
 
 #parse arguments
 if len(sys.argv)<=2:
-    helpAndExit=True
+    helpAndExit()
 else:
     try:
         #1st argument syntax: IP:Port/osc/path
@@ -73,10 +75,10 @@ else:
         for pathDir in range(FIRST_PATH_DIR_INDEX,len(oscIpPortPath.split(':')[PORT_PATH_INDEX].split('/'))):
             oscPathDir.append(oscIpPortPath.split(':')[PORT_PATH_INDEX].split('/')[pathDir])
         for oscPathDirIndex in range(0,len(oscPathDir)):    
-            oscPath+=oscPathDir[oscPathDirIndex]+'/'
+            oscPath+='/'+oscPathDir[oscPathDirIndex]
                 
     except:
-        helpAndExit=True
+        helpAndExit()
     #grab the osc message arguments and store in list
     firstOscArgIndex=TOTAL_NON_OSC_ARG_INDICES-len(sys.argv)
     for oscArg in range(firstOscArgIndex, LAST_OSC_ARG_INDEX):
@@ -92,17 +94,13 @@ else:
             except:
                 #keep arg a string
                 oscArgList[oscArg]=str(oscArgList[oscArg])
-                
-#print help and exit
-if helpAndExit==True:
-    print('Help File')
-    sys.exit(0)
         
 #create OSC Client
 try:
     oscTarget=liblo.Address(oscTargetIp, oscTargetPort)
-except liblo.AddressError as err:
-    print(str(err))
-    sys.exit()
+except liblo.AddressError as error:
+    print(str(error))
+    sys.exit(ERROR)
 
 sendOSC(oscTarget, oscPath, oscArgList)
+sys.exit(CLEAN)
