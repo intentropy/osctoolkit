@@ -17,6 +17,10 @@ OSC Listen
 
 import liblo, sys
 
+#PROGRAM CONST
+ERROR=255
+CLEAN=0
+
 #OSC vars
 listenPort=[]
 oscListenServer=[]
@@ -37,7 +41,6 @@ for lineRead in configLines:
 
         #OSC Settings
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.listen_port':
-            global listenPort
             listenPort.append(int(lineRead.split()[CONFIG_VALUE_ARG]))
 
 #Verbosely display listen ports
@@ -45,13 +48,14 @@ if verboseListenPorts==True:
     for portIdNum in range(0,len(listenPort)):
         print('Listening for OSC on port number: ', end='')
         print(listenPort[portIdNum])
-
+        
+#Setup listen ports
 try:
     for oscServerIdNum in range(0,len(listenPort)):
         oscListenServer.append(liblo.Server(listenPort[oscServerIdNum]))
-except liblo.ServerError as  err:
-    print(str(err))
-    sys.exit()
+except liblo.ServerError as  error:
+    print(str(error))
+    sys.exit(ERROR)
 
 #this funtion is executed when OSC command is received
 def echoMessage(path, args):
