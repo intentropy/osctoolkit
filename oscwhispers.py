@@ -39,12 +39,12 @@ reusedTarget=False
 oscTarget=[]
 
 #Help and exit
-def helpAndExit():
-    print('Help File!')
-    sys.exit(CLEAN)
+def helpAndExit(exitStatus):
+    print('Help File')
+    sys.exit(exitStatus)
 
 if len(sys.argv)!=2:
-    helpAndExit()
+    helpAndExit(ERROR)
     
 #load config file and declare global vars
 #CONFIG CONST
@@ -94,7 +94,7 @@ for lineRead in otwLines:
                 #truncate prefix of path
                 truncatePathPrefix=True
             else:
-                helpAndExit()
+                helpAndExit(ERROR)
             pathPrefixInfo=[forwardingPathPrefix,truncatePathPrefix]
             for destination in range(DESTINATIONS_START_INDEX,len(lineRead.split())):
                 #load the destinations into its own list, and load the index of the destination into the forwardingList
