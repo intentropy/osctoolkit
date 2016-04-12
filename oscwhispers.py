@@ -133,25 +133,11 @@ for target in range(0,len(oscMessageTargets)):
 
 def sendOSC(target, path, args):
     #send osc messages in this function
-    #send up to 8 arguments in a message
-    if len(args)==1:
-        liblo.send(target, path, args[0])
-    elif len(args)==2:
-        liblo.send(target, path, args[0], args[1])
-    elif len(args)==3:
-        liblo.send(target, path, args[0], args[1], args[2])
-    elif len(args)==4:
-        liblo.send(target, path, args[0], args[1], args[2], args[3])
-    elif len(args)==5:
-        liblo.send(target, path, args[0], args[1], args[2], args[3], args[4])
-    elif len(args)==6:
-        liblo.send(target, path, args[0], args[1], args[2], args[3], args[4], args[5])
-    elif len(args)==7:
-        liblo.send(target, path, args[0], args[1], args[2], args[3], args[4], args[5], args[6])
-    elif len(args)==8:
-        liblo.send(target, path, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
-    else:
-        helpAndExit()
+    libloSend='liblo.send(target, path'
+    for eachArg in range(0,len(args)):
+        libloSend+=', args['+str(eachArg)+']'
+    libloSend+=')'
+    exec(libloSend)
     return
 
 def truncatePathPrefix(inpath):
