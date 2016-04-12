@@ -34,9 +34,9 @@ oscPathDir=[]
 oscPath=''
 oscArgList=[]
 
-def helpAndExit():
+def helpAndExit(exitStatus):
     print('Help File')
-    sys.exit(CLEAN)
+    sys.exit(exitStatus)
 
 def sendOSC(target, path, args):
     #send osc messages in this function
@@ -49,7 +49,7 @@ def sendOSC(target, path, args):
 
 #parse arguments
 if len(sys.argv)<=2:
-    helpAndExit()
+    helpAndExit(ERROR)
 else:
     try:
         #1st argument syntax: IP:Port/osc/path
@@ -64,7 +64,7 @@ else:
             oscPath+='/'+oscPathDir[oscPathDirIndex]
                 
     except:
-        helpAndExit()
+        helpAndExit(ERROR)
     #grab the osc message arguments and store in list
     firstOscArgIndex=TOTAL_NON_OSC_ARG_INDICES-len(sys.argv)
     for oscArg in range(firstOscArgIndex, LAST_OSC_ARG_INDEX):
