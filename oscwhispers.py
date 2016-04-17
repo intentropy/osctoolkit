@@ -52,7 +52,9 @@ CONFIG_PROPERTY_ARG=0
 CONFIG_VALUE_ARG=1
 #config
 configFileName='osctools.conf'
-configLines=open(configFileName,'r').read().split('\n')
+configFile=open(configFileName,'r')
+configLines=configFile.read().split('\n')
+configFile.close()
 for lineRead in configLines:
     if (lineRead!="") and (lineRead.strip()[0:1]!='#'):
         #verbosity settings
@@ -81,7 +83,9 @@ TRUNCATE_INDICATOR_FILE_INDEX=1
 DESTINATIONS_START_INDEX=2
 #file load vars
 otwFileName=sys.argv[1]
-otwLines=open(otwFileName,'r').read().split('\n')
+otwFile=open(otwFileName, 'r')
+otwLines=otwFile.read().split('\n')
+otwFile.close()
 for lineRead in otwLines:
     if (lineRead!="") and (lineRead.strip()[0:1]!='#'):
         if lineRead.strip()[0:1]=="/":
