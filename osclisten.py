@@ -31,7 +31,9 @@ CONFIG_PROPERTY_ARG=0
 CONFIG_VALUE_ARG=1
 #config
 configFileName='osctools.conf'
-configLines=open(configFileName,'r').read().split('\n')
+configFile=open(configFileName,'r')
+configLines=configFile.read().split('\n')
+configFile.close()
 for lineRead in configLines:
     if (lineRead!="") and (lineRead.strip()[0:1]!='#'):
         #verbosity settings
@@ -42,7 +44,7 @@ for lineRead in configLines:
         #OSC Settings
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.listen_port':
             listenPort.append(int(lineRead.split()[CONFIG_VALUE_ARG]))
-
+            
 #Verbosely display listen ports
 if verboseListenPorts==True:
     for portIdNum in range(0,len(listenPort)):
