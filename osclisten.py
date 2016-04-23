@@ -73,7 +73,7 @@ except liblo.ServerError as  error:
 for eachPort in enumerate(listenPort):
     tempEchoFunc='def echoMessage'+str(eachPort[ENUM_VALUE_INDEX])+'(path, args):\n'
     #if the path is '/oscwhispers/exit, and the value is 1 then exit
-    tempEchoFunc+='    if path=="/oscwhispers/exit" and int(args[EXIT_ARG_INDEX])==1:\n'
+    tempEchoFunc+='    if path=="/osclisten/exit" and int(args[EXIT_ARG_INDEX])==1:\n'
     tempEchoFunc+='        global exitCall\n'
     tempEchoFunc+='        exitCall=True\n'
     tempEchoFunc+='    else:\n'
