@@ -20,10 +20,20 @@ import liblo, sys
 #PROGRAM CONST
 ERROR=255
 CLEAN=0
+ENUM_ITERATE_INDEX=0
+ENUM_VALUE_INDEX=1
+
+#OSC CONST
+EXIT_ARG_INDEX=0
+
+#program vars
+exitCall=False
 
 #OSC vars
 listenPort=[]
 oscListenServer=[]
+echoFunc=[]
+echoReg=[]
 
 #load config file and declare global vars
 #CONFIG CONST
@@ -35,7 +45,7 @@ configFile=open(configFileName,'r')
 configLines=configFile.read().split('\n')
 configFile.close()
 for lineRead in configLines:
-    if (lineRead!="") and (lineRead.strip()[0:1]!='#'):
+    if lineRead!="" and lineRead.strip().startswith('#')==False:
         #verbosity settings
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.verbose_listen_ports':
             global verboseListenPorts
@@ -47,32 +57,50 @@ for lineRead in configLines:
             
 #Verbosely display listen ports
 if verboseListenPorts==True:
-    for portIdNum in range(0,len(listenPort)):
+    for portIdNum in enumerate(listenPort):
         print('Listening for OSC on port number: ', end='')
-        print(listenPort[portIdNum])
+        print(portIdNum[ENUM_VALUE_INDEX])
         
 #Setup listen ports
 try:
-    for oscServerIdNum in range(0,len(listenPort)):
-        oscListenServer.append(liblo.Server(listenPort[oscServerIdNum]))
+    for oscServerId in enumerate(listenPort):
+        oscListenServer.append(liblo.Server(oscServerId[ENUM_VALUE_INDEX]))
 except liblo.ServerError as  error:
     print(str(error))
     sys.exit(ERROR)
 
-#this funtion is executed when OSC command is received
-def echoMessage(path, args):
-    #TODO: Also print port number of message
-    print(path, end=" ")
-    print(args)
-    return
+#build echoMessage fucntion strings
+for eachPort in enumerate(listenPort):
+    tempEchoFunc='def echoMessage'+str(eachPort[ENUM_VALUE_INDEX])+'(path, args):\n'
+    #if the path is '/oscwhispers/exit, and the value is 1 then exit
+    tempEchoFunc+='    if path=="/oscwhispers/exit" and int(args[EXIT_ARG_INDEX])==1:\n'
+    tempEchoFunc+='        global exitCall\n'
+    tempEchoFunc+='        exitCall=True\n'
+    tempEchoFunc+='    else:\n'
+    #else echo the incoming message
+    tempEchoFunc+='        print("'+str(eachPort[ENUM_VALUE_INDEX])+':", end=" ")\n'
+    tempEchoFunc+='        print(path, end=" ")\n'
+    tempEchoFunc+='        print(args)\n'
+    tempEchoFunc+='    return'
+    echoFunc.append(tempEchoFunc)
 
-#register method for receiveing OSC command
-for oscServerIdNum in range(0,len(oscListenServer)):
-    oscListenServer[oscServerIdNum].add_method(None, None, echoMessage)
+#create echoMessage functions
+for createFunc in enumerate(echoFunc):
+    exec(createFunc[ENUM_VALUE_INDEX])
+
+#build OSC method registration string
+for eachPort in enumerate(listenPort):
+    tempEchoReg='oscListenServer[eachMethod[ENUM_ITERATE_INDEX]].add_method(None, None, echoMessage'+str(eachPort[ENUM_VALUE_INDEX])+')'
+    echoReg.append(tempEchoReg)
+    
+#register methods for listening on each port
+for eachMethod in enumerate(echoReg):
+    exec(eachMethod[ENUM_VALUE_INDEX])
 
 #loop and dispatch messages every 10ms
 print("Ready...")
 print()
-while True:
-    for oscServerIdNum in range(0,len(oscListenServer)):
-        oscListenServer[oscServerIdNum].recv(1)
+while exitCall==False:
+    for oscServerId in enumerate(oscListenServer):
+        oscServerId[ENUM_VALUE_INDEX].recv(1)
+sys.exit(0)
