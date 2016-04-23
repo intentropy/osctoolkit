@@ -56,7 +56,7 @@ configFile=open(configFileName,'r')
 configLines=configFile.read().split('\n')
 configFile.close()
 for lineRead in configLines:
-    if (lineRead!="") and (lineRead.strip()[0:1]!='#'):
+    if (lineRead!="") and (lineRead.strip().startswith('#')==False):
         #verbosity settings
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='oscwhispers.verbose_listen_port':
             global verboseListenPort
@@ -87,8 +87,8 @@ otwFile=open(otwFileName, 'r')
 otwLines=otwFile.read().split('\n')
 otwFile.close()
 for lineRead in otwLines:
-    if (lineRead!="") and (lineRead.strip()[0:1]!='#'):
-        if lineRead.strip()[0:1]=="/":
+    if lineRead!="" and lineRead.strip().startswith('#')==False:
+        if lineRead.strip().startswith("/")==True:
             #parse forwarding destinations line
             forwardingPathPrefix=lineRead.split()[PATH_PREFIX_FILE_INDEX].strip('/')
             if lineRead.split()[TRUNCATE_INDICATOR_FILE_INDEX]=="+":
