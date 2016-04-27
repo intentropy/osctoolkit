@@ -51,10 +51,16 @@ if len(sys.argv)!=2:
 CONFIG_PROPERTY_ARG=0
 CONFIG_VALUE_ARG=1
 #config
-configFileName='osctools.conf'
-configFile=open(configFileName,'r')
-configLines=configFile.read().split('\n')
-configFile.close()
+try:
+    configFileName='osctools.conf'
+    configFile=open(configFileName,'r')
+    configLines=configFile.read().split('\n')
+except:
+    configFileName='/etc/osctools.conf'
+    configFile=open(configFileName,'r')
+    configLines=configFile.read().split('\n')
+finally:
+    configFile.close()
 for lineRead in configLines:
     if (lineRead!="") and (lineRead.strip().startswith('#')==False):
         #verbosity settings
