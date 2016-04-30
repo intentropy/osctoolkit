@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 '''
 OSC Shout
   oscshout.py
@@ -35,7 +35,12 @@ oscPath=''
 oscArgList=[]
 
 def helpAndExit(exitStatus):
-    print('Help File')
+    print('Usage:')
+    print('  oscshout [IPv4]:[port][/osc/path] [args...]')
+    print()
+    print('Further Documentation:')
+    print('  https://github.com/ShaneHutter/python-osctools/wiki')
+    print()
     sys.exit(exitStatus)
 
 def sendOSC(target, path, args):
