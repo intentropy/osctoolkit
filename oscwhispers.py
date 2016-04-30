@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 '''
 OSC Whispers
     oscwhispers.py
@@ -40,7 +40,12 @@ oscTarget=[]
 
 #Help and exit
 def helpAndExit(exitStatus):
-    print('Help File')
+    print('Usage:')
+    print('  oscwhispers [FILENAME]')
+    print()
+    print('Further Documentation:')
+    print('  https://github.com/ShaneHutter/python-osctools/wiki')
+    print()
     sys.exit(exitStatus)
 
 if len(sys.argv)!=2:
