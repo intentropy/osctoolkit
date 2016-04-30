@@ -120,12 +120,6 @@ for lineRead in otwLines:
                 messagePort=int(lineRead.split()[destination].split(':')[PORT_INDEX])
                 tempMessageTargets.append([messageIP, messagePort])
                 for targetScan in enumerate(tempMessageTargets):
-                    #try:
-                    #    if oscMessageTargets[targetScan][IP_INDEX]==targetScan[ENUM_VALUE_INDEX][IP_INDEX] and oscMessageTargets[targetScan][PORT_INDEX]==targetScan[ENUM_VALUE_INDEX][PORT_INDEX]:
-                    #        reusedTarget=True
-                    #        targetId=targetScan
-                    #except:
-                    #    if reusedTarget==False:
                     oscMessageTargets.append([targetScan[ENUM_VALUE_INDEX][IP_INDEX], targetScan[ENUM_VALUE_INDEX][PORT_INDEX]])
                     targetId=len(oscMessageTargets)-1
                 targetIdList.append(targetId)
@@ -133,11 +127,7 @@ for lineRead in otwLines:
             forwardingList.append([pathPrefixInfo, targetIdList])
             reusedTarget=False
             targetIdList=[]
-'''
-print(forwardingList)
-print(oscMessageTargets)
-sys.exit(0)
-'''
+            
 #setup OSC Server
 try:
     oscListenServer=liblo.Server(listenPort)
