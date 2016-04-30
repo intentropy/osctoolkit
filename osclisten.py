@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 '''
 OSC Listen
   osclisten.py
@@ -84,7 +84,7 @@ for eachPort in enumerate(listenPort):
     tempEchoFunc+='        exitCall=True\n'
     tempEchoFunc+='    else:\n'
     #else echo the incoming message
-    tempEchoFunc+='        print("'+str(eachPort[ENUM_VALUE_INDEX])+':", end=" ")\n'
+    tempEchoFunc+='        print("'+str(eachPort[ENUM_VALUE_INDEX])+':", end="")\n'
     tempEchoFunc+='        print(path, end=" ")\n'
     tempEchoFunc+='        print(args)\n'
     tempEchoFunc+='    return'
