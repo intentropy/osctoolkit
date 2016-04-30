@@ -17,6 +17,8 @@ import sys, liblo
 #PROGRAM CONST
 CLEAN=0
 ERROR=255
+ENUM_ITERATE_INDEX=0
+ENUM_VALUE_INDEX=1
 
 #OSC CONST
 IP_INDEX=0
@@ -117,20 +119,25 @@ for lineRead in otwLines:
                 messageIP=lineRead.split()[destination].split(':')[IP_INDEX]
                 messagePort=int(lineRead.split()[destination].split(':')[PORT_INDEX])
                 tempMessageTargets.append([messageIP, messagePort])
-                for targetScan in range(0,len(tempMessageTargets)):
-                    try:
-                        if oscMessageTargets[targetScan][IP_INDEX]==messageIP and oscMessageTargets[targetScan][PORT_INDEX]==messagePort:
-                            reusedTarget=True
-                            targetId=targetScan
-                    except:
-                        if reusedTarget==False:
-                            oscMessageTargets.append([messageIP, messagePort])
-                            targetId=len(oscMessageTargets)-1
+                for targetScan in enumerate(tempMessageTargets):
+                    #try:
+                    #    if oscMessageTargets[targetScan][IP_INDEX]==targetScan[ENUM_VALUE_INDEX][IP_INDEX] and oscMessageTargets[targetScan][PORT_INDEX]==targetScan[ENUM_VALUE_INDEX][PORT_INDEX]:
+                    #        reusedTarget=True
+                    #        targetId=targetScan
+                    #except:
+                    #    if reusedTarget==False:
+                    oscMessageTargets.append([targetScan[ENUM_VALUE_INDEX][IP_INDEX], targetScan[ENUM_VALUE_INDEX][PORT_INDEX]])
+                    targetId=len(oscMessageTargets)-1
                 targetIdList.append(targetId)
+                tempMessageTargets=[]
             forwardingList.append([pathPrefixInfo, targetIdList])
             reusedTarget=False
             targetIdList=[]
-
+'''
+print(forwardingList)
+print(oscMessageTargets)
+sys.exit(0)
+'''
 #setup OSC Server
 try:
     oscListenServer=liblo.Server(listenPort)
@@ -139,9 +146,11 @@ except liblo.ServerError as error:
     sys.exit(ERROR)
 
 #setup OSC clients
-for target in range(0,len(oscMessageTargets)):
+for target in enumerate(oscMessageTargets):
+    print(target[ENUM_ITERATE_INDEX])
+    print(target[ENUM_VALUE_INDEX][IP_INDEX], target[ENUM_VALUE_INDEX][PORT_INDEX])
     try:
-        oscTarget.append(liblo.Address(oscMessageTargets[target][IP_INDEX],oscMessageTargets[target][PORT_INDEX]))
+        oscTarget.append(liblo.Address(target[ENUM_VALUE_INDEX][IP_INDEX], target[ENUM_VALUE_INDEX][PORT_INDEX]))
     except liblo.AddressError as error:
         print(str(error))
         sys.exit(ERROR)
