@@ -19,6 +19,9 @@ CLEAN=0
 ERROR=255
 ENUM_ITERATE_INDEX=0
 ENUM_VALUE_INDEX=1
+OTW_FILE_ARG=1
+REQUIRED_ARGUMENTS=2
+LOOP_DELAY=1
 
 #OSC CONST
 IP_INDEX=0
@@ -50,7 +53,7 @@ def helpAndExit(exitStatus):
     print()
     sys.exit(exitStatus)
 
-if len(sys.argv)!=2:
+if len(sys.argv)!=REQUIRED_ARGUMENTS:
     helpAndExit(ERROR)
     
 #load config file and declare global vars
@@ -95,7 +98,7 @@ PATH_PREFIX_FILE_INDEX=0
 TRUNCATE_INDICATOR_FILE_INDEX=1
 DESTINATIONS_START_INDEX=2
 #file load vars
-otwFileName=sys.argv[1]
+otwFileName=sys.argv[OTW_FILE_ARG]
 otwFile=open(otwFileName, 'r')
 otwLines=otwFile.read().split('\n')
 otwFile.close()
@@ -148,8 +151,8 @@ for target in enumerate(oscMessageTargets):
 def sendOSC(target, path, args):
     #send osc messages in this function
     libloSend='liblo.send(target, path'
-    for eachArg in range(0,len(args)):
-        libloSend+=', args['+str(eachArg)+']'
+    for eachArg in enumerate(args):
+        libloSend+=', args['+str(eachArg[ENUM_ITERATE_INDEX])+']'
     libloSend+=')'
     exec(libloSend)
     return
@@ -167,14 +170,14 @@ def pathPrefix(inpath):
     return prefix
 
 def forwardMessage(path, args):
-    for eachList in range(0,len(forwardingList)):
-        if forwardingList[eachList][PATH_INFO_LIST_INDEX][PATH_PREFIX_INDEX]==pathPrefix(path):
-            if forwardingList[eachList][PATH_INFO_LIST_INDEX][TRUNCATE_INDICATOR_INDEX]==True:
-                for eachTarget in range(0,len(forwardingList[eachList][CLIENT_TARGET_LIST_INDEX])):
-                    sendOSC(oscTarget[forwardingList[eachList][CLIENT_TARGET_LIST_INDEX][eachTarget]], truncatePathPrefix(path), args)
+    for eachList in enumerate(forwardingList):
+        if eachList[ENUM_VALUE_INDEX][PATH_INFO_LIST_INDEX][PATH_PREFIX_INDEX]==pathPrefix(path):
+            if eachList[ENUM_VALUE_INDEX][PATH_INFO_LIST_INDEX][TRUNCATE_INDICATOR_INDEX]==True:
+                for eachTarget in enumerate(eachList[ENUM_VALUE_INDEX][CLIENT_TARGET_LIST_INDEX]):
+                    sendOSC(oscTarget[eachTarget[ENUM_VALUE_INDEX]], truncatePathPrefix(path), args)
             else:
-                for eachTarget in range(0,len(forwardingList[eachList][CLIENT_TARGET_LIST_INDEX])):
-                    sendOSC(oscTarget[forwardingList[eachList][CLIENT_TARGET_LIST_INDEX][eachTarget]], path, args)
+                for eachTarget in enumerate(eachList[ENUM_VALUE_INDEX][CLIENT_TARGET_LIST_INDEX]):
+                    sendOSC(oscTarget[eachTarget[ENUM_VALUE_INDEX]], path, args)
     return
         
 #register OSC Listen method
@@ -183,22 +186,22 @@ oscListenServer.add_method(None, None, forwardMessage)
 #output Startup verbosity
 if verboseForwardingList==True:
     print()
-    for eachList in range(0,len(forwardingList)):
+    for eachList in enumerate(forwardingList):
         #make this output look nicer
         print('Path with prefix /', end='')
-        print(forwardingList[eachList][PATH_INFO_LIST_INDEX][PATH_PREFIX_INDEX], end=' ')
-        if forwardingList[eachList][PATH_INFO_LIST_INDEX][TRUNCATE_INDICATOR_INDEX]==True:
+        print(eachList[ENUM_VALUE_INDEX][PATH_INFO_LIST_INDEX][PATH_PREFIX_INDEX], end=' ')
+        if eachList[ENUM_VALUE_INDEX][PATH_INFO_LIST_INDEX][TRUNCATE_INDICATOR_INDEX]==True:
             print('will truncate path prefix.')
         else:
             print('will not truncate path prefix.')
         print('Then it will forward to:')
-        for target in range(0,len(forwardingList[eachList][CLIENT_TARGET_LIST_INDEX])):
+        for target in enumerate(eachList[ENUM_VALUE_INDEX][CLIENT_TARGET_LIST_INDEX]):
             print('IP: ', end='')
-            print(oscMessageTargets[forwardingList[eachList][CLIENT_TARGET_LIST_INDEX][target]][IP_INDEX], end='    Port: ')
-            print(str(oscMessageTargets[forwardingList[eachList][CLIENT_TARGET_LIST_INDEX][target]][PORT_INDEX]))
+            print(oscMessageTargets[target[ENUM_VALUE_INDEX]][IP_INDEX], end='    Port: ')
+            print(str(oscMessageTargets[target[ENUM_VALUE_INDEX]][PORT_INDEX]))
         print()
 
 #main loop
 while True:
-    oscListenServer.recv(1)
+    oscListenServer.recv(LOOP_DELAY)
 sys.exit(CLEAN)
