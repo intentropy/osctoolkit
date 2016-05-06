@@ -7,9 +7,25 @@ OSC Whispers
     Required Dependencies:  python >= 3.5, pyliblo
 
       This python script, and all of OSC_Tools is licensed
-      under the GNU GPL version 3
+      under the GNU GPL version 3.
 
-      This program forwards OSC Messages.
+      OSC Whispers recieves OSC Messages and forwards the message to a new
+      location(s) based on the messages Path Prefix.
+
+      OSC Whispers is a part of osctoolkit.
+
+      osctoolkit is free software; you can redistribute it and/or modify
+      it under the terms of the GNU Lesser General Public License as published 
+      by the Free Software Foundation, either version 3 of the License, or
+      (at your option) any later version.
+
+      osctoolkit is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+      GNU Lesser General Public License for more details.
+
+      You should have received a copy of the GNU Lesser General Public License
+      along with this program. If not, see <http://www.gnu.org/licenses/>..
 '''
 
 import sys, liblo
