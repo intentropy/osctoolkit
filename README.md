@@ -1,4 +1,4 @@
-# OSC Tools
+# OSC Toolkit
 * **OSC Listen**, Listen over select ports for any incoming OSC Message.
 * **OSC Shout**, Send OSC messages from the command line.
 * **OSC Whispers**, OSC message forwarding.
