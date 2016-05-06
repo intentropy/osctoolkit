@@ -62,11 +62,11 @@ CONFIG_PROPERTY_ARG=0
 CONFIG_VALUE_ARG=1
 #config
 try:
-    configFileName='osctools.conf'
+    configFileName='osctoolkit.conf'
     configFile=open(configFileName,'r')
     configLines=configFile.read().split('\n')
 except:
-    configFileName='/etc/osctools.conf'
+    configFileName='/etc/osctoolkit.conf'
     configFile=open(configFileName,'r')
     configLines=configFile.read().split('\n')
 finally:
