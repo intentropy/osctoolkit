@@ -25,9 +25,6 @@ OSC Listen
 
       You should have received a copy of the GNU Lesser General Public License
       along with this program. If not, see <http://www.gnu.org/licenses/>.
-      This program listens on any ports listed in the 
-      osctools.conf configuration file, and prints any incoming
-      message (path and values) to the screen.
 '''
 
 import liblo, sys
