@@ -32,12 +32,18 @@ import sys, liblo
 
 #PROGRAM CONST
 CLEAN=0
-ERROR=255
+ERROR=1
 ENUM_ITERATE_INDEX=0
 ENUM_VALUE_INDEX=1
 OTW_FILE_ARG=1
 REQUIRED_ARGUMENTS=2
 LOOP_DELAY=1
+HELP_CALL_ARG=1
+HELP_ONLY_ARGUMENTS=2
+
+#CONFIG CONST
+CONFIG_PROPERTY_ARG=0
+CONFIG_VALUE_ARG=1
 
 #OSC CONST
 IP_INDEX=0
@@ -64,41 +70,45 @@ def helpAndExit(exitStatus):
     print('Usage:')
     print('  oscwhispers [FILENAME]')
     print()
+    print('Optional arguments:')
+    print('  -h, --help    Display help and exit.')
+    print()
     print('Further Documentation:')
-    print('  https://github.com/ShaneHutter/python-osctools/wiki')
+    print('  https://github.com/ShaneHutter/osctoolkit/wiki')
     print()
     sys.exit(exitStatus)
 
+#check for help call
+if len(sys.argv)>= HELP_ONLY_ARGUMENTS:
+    if sys.argv[HELP_CALL_ARG]=='-h' or sys.argv[HELP_CALL_ARG]=='--help':
+        helpAndExit(CLEAN)
+
+#Check if the required number of arguments where passed
 if len(sys.argv)!=REQUIRED_ARGUMENTS:
     helpAndExit(ERROR)
     
 #load config file and declare global vars
-#CONFIG CONST
-CONFIG_PROPERTY_ARG=0
-CONFIG_VALUE_ARG=1
-#config
 try:
     configFileName='osctoolkit.conf'
     configFile=open(configFileName,'r')
-    configLines=configFile.read().split('\n')
 except:
     configFileName='/etc/osctoolkit.conf'
     configFile=open(configFileName,'r')
-    configLines=configFile.read().split('\n')
 finally:
+    configLines=configFile.read().split('\n')
     configFile.close()
 for lineRead in configLines:
     if (lineRead!="") and (lineRead.strip().startswith('#')==False):
         #verbosity settings
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='oscwhispers.verbose_listen_port':
             global verboseListenPort
-            verboseListenPorts=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+            verboseListenPort=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='oscwhispers.verbose_incoming_osc':
             global verboseIncomingOsc
-            verboseListenPorts=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+            verboseIncomingOsc=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='oscwhispers.verbose_outgoing_osc':
             global verboseOutgoingOsc
-            verboseListenPorts=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+            verboseOutgoingOsc=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='oscwhispers.verbose_forwarding_list':
             global verboseForwardingList
             verboseForwardingList=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
@@ -149,6 +159,9 @@ for lineRead in otwLines:
             
 #setup OSC Server
 try:
+    if verboseListenPort == True:
+        print('Listening on port: ', end='')
+        print(listenPort)
     oscListenServer=liblo.Server(listenPort)
 except liblo.ServerError as error:
     print(str(error))
@@ -156,8 +169,6 @@ except liblo.ServerError as error:
 
 #setup OSC clients
 for target in enumerate(oscMessageTargets):
-    print(target[ENUM_ITERATE_INDEX])
-    print(target[ENUM_VALUE_INDEX][IP_INDEX], target[ENUM_VALUE_INDEX][PORT_INDEX])
     try:
         oscTarget.append(liblo.Address(target[ENUM_VALUE_INDEX][IP_INDEX], target[ENUM_VALUE_INDEX][PORT_INDEX]))
     except liblo.AddressError as error:

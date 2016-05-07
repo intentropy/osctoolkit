@@ -38,8 +38,10 @@ IP_INDEX=0
 PORT_PATH_INDEX=1
 PORT_INDEX=0
 FIRST_PATH_DIR_INDEX=1
-ERROR=255
+ERROR=1
 CLEAN=0
+HELP_CALL_ARG=1
+HELP_ONLY_ARGUMENTS=2
 
 #OSC CONST
 LAST_OSC_ARG_INDEX=0
@@ -54,11 +56,19 @@ def helpAndExit(exitStatus):
     print('Usage:')
     print('  oscshout [IPv4]:[port][/osc/path] [args...]')
     print()
+    print('Optional arguments:')
+    print('  -h, --help    Display help and exit.')
+    print()
     print('Further Documentation:')
-    print('  https://github.com/ShaneHutter/python-osctools/wiki')
+    print('  https://github.com/ShaneHutter/osctoolkit/wiki')
     print()
     sys.exit(exitStatus)
 
+#check for help call
+if len(sys.argv)== HELP_ONLY_ARGUMENTS:
+    if sys.argv[HELP_CALL_ARG]=='-h' or sys.argv[HELP_CALL_ARG]=='--help':
+        helpAndExit(CLEAN)
+    
 def sendOSC(target, path, args):
     #send osc messages in this function
     libloSend='liblo.send(target, path'

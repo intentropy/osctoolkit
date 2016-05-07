@@ -30,10 +30,16 @@ OSC Listen
 import liblo, sys
 
 #PROGRAM CONST
-ERROR=255
+ERROR=1
 CLEAN=0
 ENUM_ITERATE_INDEX=0
 ENUM_VALUE_INDEX=1
+HELP_CALL_ARG=1
+HELP_ONLY_ARGUMENTS=2
+
+#CONFIG CONST
+CONFIG_PROPERTY_ARG=0
+CONFIG_VALUE_ARG=1
 
 #OSC CONST
 EXIT_ARG_INDEX=0
@@ -47,20 +53,35 @@ oscListenServer=[]
 echoFunc=[]
 echoReg=[]
 
+#help and exit
+def helpAndExit(exitStatus):
+    print('Usage:')
+    print('  Declare listen ports in the configuration file.')
+    print()
+    print('Optional arguments:')
+    print('  -h, --help    Display help and exit.')
+    print()
+    print('Further Documentation:')
+    print('  https://github.com/ShaneHutter/osctoolkit/wiki')
+    print()
+    sys.exit(exitStatus)
+
+#check for help call
+if len(sys.argv)>= HELP_ONLY_ARGUMENTS:
+    if sys.argv[HELP_CALL_ARG]=='-h' or sys.argv[HELP_CALL_ARG]=='--help':
+        helpAndExit(CLEAN)
+    else:
+        helpAndExit(ERROR)
+        
 #load config file and declare global vars
-#CONFIG CONST
-CONFIG_PROPERTY_ARG=0
-CONFIG_VALUE_ARG=1
-#config
 try:
     configFileName='osctoolkit.conf'
     configFile=open(configFileName,'r')
-    configLines=configFile.read().split('\n')
 except:
     configFileName='/etc/osctoolkit.conf'
     configFile=open(configFileName,'r')
-    configLines=configFile.read().split('\n')
 finally:
+    configLines=configFile.read().split('\n')
     configFile.close()
 for lineRead in configLines:
     if lineRead!="" and lineRead.strip().startswith('#')==False:
