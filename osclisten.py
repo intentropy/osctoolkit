@@ -32,8 +32,9 @@ import liblo, sys
 #PROGRAM CONST
 ERROR=1
 CLEAN=0
-ENUM_ITERATE_INDEX=0
-ENUM_VALUE_INDEX=1
+MAIN_LOOP_LATENCY=1
+ENUMERATE_ITERATE_INDEX=0
+ENUMERATE_VALUE_INDEX=1
 HELP_CALL_ARG=1
 HELP_ONLY_ARGUMENTS=2
 
@@ -96,50 +97,50 @@ for lineRead in configLines:
             
 #Verbosely display listen ports
 if verboseListenPorts==True:
-    for portIdNum in enumerate(listenPort):
+    for portIdNum in listenPort:
         print('Listening for OSC on port number: ', end='')
-        print(portIdNum[ENUM_VALUE_INDEX])
+        print(portIdNum)
         
 #Setup listen ports
 try:
-    for oscServerId in enumerate(listenPort):
-        oscListenServer.append(liblo.Server(oscServerId[ENUM_VALUE_INDEX]))
+    for oscServerId in listenPort:
+        oscListenServer.append(liblo.Server(oscServerId))
 except liblo.ServerError as  error:
     print(str(error))
     sys.exit(ERROR)
 
 #build echoMessage fucntion strings
-for eachPort in enumerate(listenPort):
-    tempEchoFunc='def echoMessage'+str(eachPort[ENUM_VALUE_INDEX])+'(path, args):\n'
+for eachPort in listenPort:
+    tempEchoFunc='def echoMessage'+str(eachPort)+'(path, args):\n'
     #if the path is '/oscwhispers/exit, and the value is 1 then exit
     tempEchoFunc+='    if path=="/osclisten/exit" and int(args[EXIT_ARG_INDEX])==1:\n'
     tempEchoFunc+='        global exitCall\n'
     tempEchoFunc+='        exitCall=True\n'
     tempEchoFunc+='    else:\n'
     #else echo the incoming message
-    tempEchoFunc+='        print("'+str(eachPort[ENUM_VALUE_INDEX])+':", end="")\n'
+    tempEchoFunc+='        print("'+str(eachPort)+':", end="")\n'
     tempEchoFunc+='        print(path, end=" ")\n'
     tempEchoFunc+='        print(args)\n'
     tempEchoFunc+='    return'
     echoFunc.append(tempEchoFunc)
 
 #create echoMessage functions
-for createFunc in enumerate(echoFunc):
-    exec(createFunc[ENUM_VALUE_INDEX])
+for createFunc in echoFunc:
+    exec(createFunc)
 
 #build OSC method registration string
-for eachPort in enumerate(listenPort):
-    tempEchoReg='oscListenServer[eachMethod[ENUM_ITERATE_INDEX]].add_method(None, None, echoMessage'+str(eachPort[ENUM_VALUE_INDEX])+')'
+for eachPort in listenPort:
+    tempEchoReg='oscListenServer[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, echoMessage'+str(eachPort)+')'
     echoReg.append(tempEchoReg)
     
 #register methods for listening on each port
 for eachMethod in enumerate(echoReg):
-    exec(eachMethod[ENUM_VALUE_INDEX])
+    exec(eachMethod[ENUMERATE_VALUE_INDEX])
 
 #loop and dispatch messages every 10ms
 print("Ready...")
 print()
 while exitCall==False:
-    for oscServerId in enumerate(oscListenServer):
-        oscServerId[ENUM_VALUE_INDEX].recv(1)
-sys.exit(0)
+    for oscServerId in oscListenServer:
+        oscServerId.recv(MAIN_LOOP_LATENCY)
+sys.exit(CLEAN)
