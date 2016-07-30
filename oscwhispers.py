@@ -33,11 +33,10 @@ import sys, liblo
 #PROGRAM CONST
 CLEAN=0
 ERROR=1
-ENUM_ITERATE_INDEX=0
-ENUM_VALUE_INDEX=1
+ENUMERATE_ITERATE_INDEX=0
 OTW_FILE_ARG=1
 REQUIRED_ARGUMENTS=2
-LOOP_DELAY=1
+MAIN_LOOP_LATENCY=1
 HELP_CALL_ARG=1
 HELP_ONLY_ARGUMENTS=2
 
@@ -91,14 +90,15 @@ if len(sys.argv)!=REQUIRED_ARGUMENTS:
 try:
     configFileName='osctoolkit.conf'
     configFile=open(configFileName,'r')
+    configLines=configFile.read().split('\n')
 except:
     configFileName='/etc/osctoolkit.conf'
     configFile=open(configFileName,'r')
-finally:
     configLines=configFile.read().split('\n')
+finally:
     configFile.close()
 for lineRead in configLines:
-    if (lineRead!="") and (lineRead.strip().startswith('#')==False):
+    if lineRead!="" and lineRead.strip().startswith('#')==False:
         #verbosity settings
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='oscwhispers.verbose_listen_port':
             global verboseListenPort
@@ -148,8 +148,8 @@ for lineRead in otwLines:
                 messageIP=lineRead.split()[destination].split(':')[IP_INDEX]
                 messagePort=int(lineRead.split()[destination].split(':')[PORT_INDEX])
                 tempMessageTargets.append([messageIP, messagePort])
-                for targetScan in enumerate(tempMessageTargets):
-                    oscMessageTargets.append([targetScan[ENUM_VALUE_INDEX][IP_INDEX], targetScan[ENUM_VALUE_INDEX][PORT_INDEX]])
+                for targetScan in tempMessageTargets:
+                    oscMessageTargets.append([targetScan[IP_INDEX], targetScan[PORT_INDEX]])
                     targetId=len(oscMessageTargets)-1
                 targetIdList.append(targetId)
                 tempMessageTargets=[]
@@ -168,9 +168,9 @@ except liblo.ServerError as error:
     sys.exit(ERROR)
 
 #setup OSC clients
-for target in enumerate(oscMessageTargets):
+for target in oscMessageTargets:
     try:
-        oscTarget.append(liblo.Address(target[ENUM_VALUE_INDEX][IP_INDEX], target[ENUM_VALUE_INDEX][PORT_INDEX]))
+        oscTarget.append(liblo.Address(target[IP_INDEX], target[PORT_INDEX]))
     except liblo.AddressError as error:
         print(str(error))
         sys.exit(ERROR)
@@ -179,7 +179,7 @@ def sendOSC(target, path, args):
     #send osc messages in this function
     libloSend='liblo.send(target, path'
     for eachArg in enumerate(args):
-        libloSend+=', args['+str(eachArg[ENUM_ITERATE_INDEX])+']'
+        libloSend+=', args['+str(eachArg[ENUMERATE_ITERATE_INDEX])+']'
     libloSend+=')'
     exec(libloSend)
     return
@@ -197,14 +197,14 @@ def pathPrefix(inpath):
     return prefix
 
 def forwardMessage(path, args):
-    for eachList in enumerate(forwardingList):
-        if eachList[ENUM_VALUE_INDEX][PATH_INFO_LIST_INDEX][PATH_PREFIX_INDEX]==pathPrefix(path):
-            if eachList[ENUM_VALUE_INDEX][PATH_INFO_LIST_INDEX][TRUNCATE_INDICATOR_INDEX]==True:
-                for eachTarget in enumerate(eachList[ENUM_VALUE_INDEX][CLIENT_TARGET_LIST_INDEX]):
-                    sendOSC(oscTarget[eachTarget[ENUM_VALUE_INDEX]], truncatePathPrefix(path), args)
+    for eachList in forwardingList:
+        if eachList[PATH_INFO_LIST_INDEX][PATH_PREFIX_INDEX]==pathPrefix(path):
+            if eachList[PATH_INFO_LIST_INDEX][TRUNCATE_INDICATOR_INDEX]==True:
+                for eachTarget in eachList[CLIENT_TARGET_LIST_INDEX]:
+                    sendOSC(oscTarget[eachTarget], truncatePathPrefix(path), args)
             else:
-                for eachTarget in enumerate(eachList[ENUM_VALUE_INDEX][CLIENT_TARGET_LIST_INDEX]):
-                    sendOSC(oscTarget[eachTarget[ENUM_VALUE_INDEX]], path, args)
+                for eachTarget in eachList[CLIENT_TARGET_LIST_INDEX]:
+                    sendOSC(oscTarget[eachTarget], path, args)
     return
         
 #register OSC Listen method
@@ -213,22 +213,22 @@ oscListenServer.add_method(None, None, forwardMessage)
 #output Startup verbosity
 if verboseForwardingList==True:
     print()
-    for eachList in enumerate(forwardingList):
+    for eachList in forwardingList:
         #make this output look nicer
         print('Path with prefix /', end='')
-        print(eachList[ENUM_VALUE_INDEX][PATH_INFO_LIST_INDEX][PATH_PREFIX_INDEX], end=' ')
-        if eachList[ENUM_VALUE_INDEX][PATH_INFO_LIST_INDEX][TRUNCATE_INDICATOR_INDEX]==True:
+        print(eachList[PATH_INFO_LIST_INDEX][PATH_PREFIX_INDEX], end=' ')
+        if eachList[PATH_INFO_LIST_INDEX][TRUNCATE_INDICATOR_INDEX]==True:
             print('will truncate path prefix.')
         else:
             print('will not truncate path prefix.')
         print('Then it will forward to:')
-        for target in enumerate(eachList[ENUM_VALUE_INDEX][CLIENT_TARGET_LIST_INDEX]):
+        for target in eachList[CLIENT_TARGET_LIST_INDEX]:
             print('IP: ', end='')
-            print(oscMessageTargets[target[ENUM_VALUE_INDEX]][IP_INDEX], end='    Port: ')
-            print(str(oscMessageTargets[target[ENUM_VALUE_INDEX]][PORT_INDEX]))
+            print(oscMessageTargets[target][IP_INDEX], end='    Port: ')
+            print(str(oscMessageTargets[target][PORT_INDEX]))
         print()
 
 #main loop
 while True:
-    oscListenServer.recv(LOOP_DELAY)
+    oscListenServer.recv(MAIN_LOOP_LATENCY)
 sys.exit(CLEAN)
