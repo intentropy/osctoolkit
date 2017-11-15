@@ -1,4 +1,7 @@
 # OSC Toolkit
+
+OSC Toolkit is licensed under the GNU General Public License v3.0
+
 * **OSC Listen**, Listen over select ports for any incoming OSC Message.
 * **OSC Shout**, Send OSC messages from the command line.
 * **OSC Whispers**, OSC message forwarding.
