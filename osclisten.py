@@ -27,9 +27,11 @@ OSC Listen
       along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
+###create more specifuc imports
 import liblo, sys
 
-#PROGRAM CONST
+###These values need to be declared non globally in respective functions
+## PROGRAM CONST
 ERROR=1
 CLEAN=0
 MAIN_LOOP_LATENCY=1
@@ -54,6 +56,8 @@ oscListenServer=[]
 echoFunc=[]
 echoReg=[]
 
+
+###use argparse
 #help and exit
 def helpAndExit(exitStatus):
     print('Usage:')
@@ -73,7 +77,8 @@ if len(sys.argv)>= HELP_ONLY_ARGUMENTS:
         helpAndExit(CLEAN)
     else:
         helpAndExit(ERROR)
-        
+
+###Either load config in early __name__ == '__main__' space or load inside of an object
 #load config file and declare global vars
 try:
     configFileName='osctoolkit.conf'
@@ -94,7 +99,8 @@ for lineRead in configLines:
         #OSC Settings
         if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.listen_port':
             listenPort.append(int(lineRead.split()[CONFIG_VALUE_ARG]))
-            
+
+###Create functions for all the functions and call them in approrpriate places in __name__ == '__main__'
 #Verbosely display listen ports
 if verboseListenPorts==True:
     for portIdNum in listenPort:
@@ -134,9 +140,12 @@ for eachPort in listenPort:
     echoReg.append(tempEchoReg)
     
 #register methods for listening on each port
+###Try putting the ENUMERATE_VALUE_INDEX in the for statement
+### for eachMethod in enumerate(echoReg)[ENUMERATE_VALUE_INDEX]
 for eachMethod in enumerate(echoReg):
     exec(eachMethod[ENUMERATE_VALUE_INDEX])
 
+### Main segment of code should be inside of __name__ == '__main__' 
 #loop and dispatch messages every 10ms
 print("Ready...")
 print()
