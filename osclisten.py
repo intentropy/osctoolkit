@@ -28,7 +28,9 @@ OSC Listen
 '''
 
 ###create more specifuc imports
-import liblo, sys
+from argparse import ArgumentParser
+from liblo import Server, ServerError
+from sys import argv, exit
 
 ###These values need to be declared non globally in respective functions
 ## PROGRAM CONST
@@ -51,55 +53,54 @@ EXIT_ARG_INDEX=0
 exitCall=False
 
 #OSC vars
-listenPort=[]
 oscListenServer=[]
 echoFunc=[]
 echoReg=[]
 
 
-###use argparse
-#help and exit
-def helpAndExit(exitStatus):
-    print('Usage:')
-    print('  Declare listen ports in the configuration file.')
-    print()
-    print('Optional arguments:')
-    print('  -h, --help    Display help and exit.')
-    print()
-    print('Further Documentation:')
-    print('  https://github.com/ShaneHutter/osctoolkit/wiki')
-    print()
-    sys.exit(exitStatus)
-
-#check for help call
-if len(sys.argv)>= HELP_ONLY_ARGUMENTS:
-    if sys.argv[HELP_CALL_ARG]=='-h' or sys.argv[HELP_CALL_ARG]=='--help':
-        helpAndExit(CLEAN)
-    else:
-        helpAndExit(ERROR)
-
-###Either load config in early __name__ == '__main__' space or load inside of an object
-#load config file and declare global vars
-try:
-    configFileName='osctoolkit.conf'
-    configFile=open(configFileName,'r')
-except:
-    configFileName='/etc/osctoolkit.conf'
-    configFile=open(configFileName,'r')
-finally:
-    configLines=configFile.read().split('\n')
-    configFile.close()
-for lineRead in configLines:
-    if lineRead!="" and lineRead.strip().startswith('#')==False:
-        #verbosity settings
-        if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.verbose_listen_ports':
-            global verboseListenPorts
-            verboseListenPorts=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
-
-        #OSC Settings
-        if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.listen_port':
-            listenPort.append(int(lineRead.split()[CONFIG_VALUE_ARG]))
-
+if __name__ == '__main__':
+    ### Config and Argument Parsing
+    # declare global config and argument vars with default values
+    global verboseListenPorts
+    verboseListenPorts = False
+    global listenPort
+    listenPort = []
+    
+    ##Load Config File
+    try:
+        configFileName='osctoolkit.conf'
+        configFile=open(configFileName,'r')
+    except:
+        configFileName='/etc/osctoolkit.conf'
+        configFile=open(configFileName,'r')
+    finally:
+        configLines=configFile.read().split('\n')
+        configFile.close()
+    for lineRead in configLines:
+        if lineRead!="" and lineRead.strip().startswith('#')==False:
+            # Verbosity Settings
+            if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.verbose_listen_ports':
+                verboseListenPorts=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+    
+            # OSC Settings
+            if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.listen_port':
+                listenPort.append(int(lineRead.split()[CONFIG_VALUE_ARG]))
+    
+    ## Parse Arguments
+    # These values may potentially overwrite config arguments
+    parser = ArgumentParser()
+    # Add arguments
+    #list additional listen ports
+    parser.add_argument("-l", "--listen", nargs="+", type=int, help="List additional ports to listen for OSC messages on.")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbosely display listen ports on startup.")
+    # Set argument vars
+    args = parser.parse_args()
+    if args.verbose:
+        verboseListenPorts = args.verbose
+    if args.listen:
+        for port in args.listen:
+            listenPort.append(port)
+    
 ###Create functions for all the functions and call them in approrpriate places in __name__ == '__main__'
 #Verbosely display listen ports
 if verboseListenPorts==True:
@@ -110,10 +111,10 @@ if verboseListenPorts==True:
 #Setup listen ports
 try:
     for oscServerId in listenPort:
-        oscListenServer.append(liblo.Server(oscServerId))
-except liblo.ServerError as  error:
+        oscListenServer.append(Server(oscServerId))
+except ServerError as  error:
     print(str(error))
-    sys.exit(ERROR)
+    exit(ERROR)
 
 #build echoMessage fucntion strings
 for eachPort in listenPort:
@@ -152,4 +153,4 @@ print()
 while exitCall==False:
     for oscServerId in oscListenServer:
         oscServerId.recv(MAIN_LOOP_LATENCY)
-sys.exit(CLEAN)
+exit(CLEAN)
