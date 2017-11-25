@@ -33,7 +33,6 @@ from liblo import Server, ServerError
 from sys import exit
 
 ## PROGRAM CONST
-ERROR=1
 CLEAN=0
 ENUMERATE_ITERATE_INDEX=0
 ENUMERATE_VALUE_INDEX=1
@@ -102,7 +101,7 @@ def setupOSCServers():
             oscListenServer.append(Server(oscServerId))
     except ServerError as  error:
         print(str(error))
-        exit(ERROR)
+        exit(error)
 
 
 # Build the functions for echoing messages on each port, then regiter as OSC servers
@@ -169,12 +168,12 @@ if __name__ == '__main__':
     if verboseListenPorts==True:
         displayListenPorts()
 
+        # Display MOTD 
+        displayMOTD()
+
     # Setup, Build, and register each OSC server on each listen port
     setupOSCServers()
     buildOSCServers()
-
-    # Display MOTD 
-    displayMOTD()
     
     # Call the main loop
     mainLoop()
