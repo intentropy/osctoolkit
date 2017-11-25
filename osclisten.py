@@ -31,6 +31,7 @@ OSC Listen
 from argparse import ArgumentParser
 from liblo import Server, ServerError
 from sys import exit
+from os.path import isfile
 
 ## PROGRAM CONST
 CLEAN=0
@@ -40,8 +41,11 @@ ENUMERATE_VALUE_INDEX=1
 
 if __name__ == '__main__':
     # Declare config constants
-    CONFIG_PROPERTY_ARG=0
-    CONFIG_VALUE_ARG=1
+    CONFIG_PROPERTY_ARG = 0
+    CONFIG_VALUE_ARG = 1
+    CONFIG_PROTO_COMMENT = 0
+    CONFIG_FILE_LOCATIONS = ['osctoolkit.conf', '/home/$USER/.config/osctoolkit.conf', '/etc/osctoolkit.conf']
+    CONFIG_COMMENT_SYMBOL = '#'
     
     # declare global config and argument vars with default values
     global verboseListenPorts
@@ -49,24 +53,23 @@ if __name__ == '__main__':
     global listenPort
     listenPort = []
     
-    ##Load Config File
-    try:
-        configFileName='osctoolkit.conf'
-        configFile=open(configFileName,'r')
-    except:
-        configFileName='/etc/osctoolkit.conf'
-        configFile=open(configFileName,'r')
-    finally:
-        configLines=configFile.read().split('\n')
-        configFile.close()
+    for checkConf in CONFIG_FILE_LOCATIONS:
+        if isfile(checkConf):
+            configFileLocation = checkConf
+            break
+    ## Load Config File
+    configFile = open(configFileLocation, 'r')
+    configLines = configFile.read().split('\n')
+    configFile.close()
     for lineRead in configLines:
-        if lineRead!="" and lineRead.strip().startswith('#')==False:
+        if lineRead:
+            lineReadProtoComment = lineRead.split(CONFIG_COMMENT_SYMBOL)[CONFIG_PROTO_COMMENT].split(' ')
             # Verbosity Settings
-            if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.verbose_listen_ports':
-                verboseListenPorts=bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+            if lineReadProtoComment[CONFIG_PROPERTY_ARG] == 'osclisten.verbose_listen_ports':
+                verboseListenPorts = bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
     
             # OSC Settings
-            if lineRead.split()[CONFIG_PROPERTY_ARG]=='osclisten.listen_port':
+            if lineReadProtoComment[CONFIG_PROPERTY_ARG] == 'osclisten.listen_port':
                 listenPort.append(int(lineRead.split()[CONFIG_VALUE_ARG]))
     
     ## Parse Arguments
