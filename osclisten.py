@@ -77,8 +77,8 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     # Add arguments
     #list additional listen ports
-    parser.add_argument("-l", "--listen", nargs="+", type=int, help="List additional ports to listen for OSC messages on.")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Verbosely display listen ports on startup.")
+    parser.add_argument("-l", "--listen", nargs = "+", type = int, help = "List additional ports to listen for OSC messages on.")
+    parser.add_argument("-v", "--verbose", action = "store_true", help = "Verbosely display listen ports on startup.")
     # Set argument vars
     args = parser.parse_args()
     if args.verbose:
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 # Verbosely display listen ports
 def displayListenPorts():
     for portIdNum in listenPort:
-        print('Listening for OSC on port number: ', end='')
+        print('Listening for OSC on port number: ', end = '')
         print(portIdNum)
         
 
