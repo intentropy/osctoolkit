@@ -27,39 +27,23 @@ OSC Listen
       along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-###create more specifuc imports
+## Import modules
 from argparse import ArgumentParser
 from liblo import Server, ServerError
-from sys import argv, exit
+from sys import exit
 
-###These values need to be declared non globally in respective functions
 ## PROGRAM CONST
 ERROR=1
 CLEAN=0
-MAIN_LOOP_LATENCY=1
 ENUMERATE_ITERATE_INDEX=0
 ENUMERATE_VALUE_INDEX=1
-HELP_CALL_ARG=1
-HELP_ONLY_ARGUMENTS=2
-
-#CONFIG CONST
-CONFIG_PROPERTY_ARG=0
-CONFIG_VALUE_ARG=1
-
-#OSC CONST
-EXIT_ARG_INDEX=0
-
-#program vars
-exitCall=False
-
-#OSC vars
-oscListenServer=[]
-echoFunc=[]
-echoReg=[]
 
 
 if __name__ == '__main__':
-    ### Config and Argument Parsing
+    # Declare config constants
+    CONFIG_PROPERTY_ARG=0
+    CONFIG_VALUE_ARG=1
+    
     # declare global config and argument vars with default values
     global verboseListenPorts
     verboseListenPorts = False
@@ -101,56 +85,96 @@ if __name__ == '__main__':
         for port in args.listen:
             listenPort.append(port)
     
-###Create functions for all the functions and call them in approrpriate places in __name__ == '__main__'
-#Verbosely display listen ports
-if verboseListenPorts==True:
+
+# Verbosely display listen ports
+def displayListenPorts():
     for portIdNum in listenPort:
         print('Listening for OSC on port number: ', end='')
         print(portIdNum)
         
-#Setup listen ports
-try:
-    for oscServerId in listenPort:
-        oscListenServer.append(Server(oscServerId))
-except ServerError as  error:
-    print(str(error))
-    exit(ERROR)
 
-#build echoMessage fucntion strings
-for eachPort in listenPort:
-    tempEchoFunc='def echoMessage'+str(eachPort)+'(path, args):\n'
-    #if the path is '/oscwhispers/exit, and the value is 1 then exit
-    tempEchoFunc+='    if path=="/osclisten/exit" and int(args[EXIT_ARG_INDEX])==1:\n'
-    tempEchoFunc+='        global exitCall\n'
-    tempEchoFunc+='        exitCall=True\n'
-    tempEchoFunc+='    else:\n'
-    #else echo the incoming message
-    tempEchoFunc+='        print("'+str(eachPort)+':", end="")\n'
-    tempEchoFunc+='        print(path, end=" ")\n'
-    tempEchoFunc+='        print(args)\n'
-    tempEchoFunc+='    return'
-    echoFunc.append(tempEchoFunc)
+# Setup listen ports
+def setupOSCServers():
+    global oscListenServer
+    oscListenServer=[]
+    try:
+        for oscServerId in listenPort:
+            oscListenServer.append(Server(oscServerId))
+    except ServerError as  error:
+        print(str(error))
+        exit(ERROR)
 
-#create echoMessage functions
-for createFunc in echoFunc:
-    exec(createFunc)
 
-#build OSC method registration string
-for eachPort in listenPort:
-    tempEchoReg='oscListenServer[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, echoMessage'+str(eachPort)+')'
-    echoReg.append(tempEchoReg)
+# Build the functions for echoing messages on each port, then regiter as OSC servers
+def buildOSCServers():
+    # Setup Constants for building OSC servers
+    global EXIT_ARG_INDEX
+    EXIT_ARG_INDEX=0
+
+    # Setup variables for building the OSC servers
+    echoFunc=[]
+    echoReg=[]
+
+    #build echoMessage fucntion strings
+    for eachPort in listenPort:
+        tempEchoFunc='def echoMessage'+str(eachPort)+'(path, args):\n'
+        #if the path is '/oscwhispers/exit, and the value is 1 then exit
+        tempEchoFunc+='    if path=="/osclisten/exit" and int(args[EXIT_ARG_INDEX])==1:\n'
+        tempEchoFunc+='        global exitCall\n'
+        tempEchoFunc+='        exitCall=True\n'
+        tempEchoFunc+='    else:\n'
+        #else echo the incoming message
+        tempEchoFunc+='        print("'+str(eachPort)+':", end="")\n'
+        tempEchoFunc+='        print(path, end=" ")\n'
+        tempEchoFunc+='        print(args)\n'
+        tempEchoFunc+='    return'
+        echoFunc.append(tempEchoFunc)
     
-#register methods for listening on each port
-###Try putting the ENUMERATE_VALUE_INDEX in the for statement
-### for eachMethod in enumerate(echoReg)[ENUMERATE_VALUE_INDEX]
-for eachMethod in enumerate(echoReg):
-    exec(eachMethod[ENUMERATE_VALUE_INDEX])
+    #create echoMessage functions
+    for createFunc in echoFunc:
+        exec(createFunc)
+    
+    #build OSC method registration string
+    for eachPort in listenPort:
+        tempEchoReg='oscListenServer[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, echoMessage'+str(eachPort)+')'
+        echoReg.append(tempEchoReg)
 
-### Main segment of code should be inside of __name__ == '__main__' 
-#loop and dispatch messages every 10ms
-print("Ready...")
-print()
-while exitCall==False:
-    for oscServerId in oscListenServer:
-        oscServerId.recv(MAIN_LOOP_LATENCY)
-exit(CLEAN)
+    #register methods for listening on each port as an OSC Server
+    for eachMethod in enumerate(echoReg):
+        exec(eachMethod[ENUMERATE_VALUE_INDEX])
+
+def displayMOTD():
+    # motd variables
+    # Set this in config, and maybe on the fly with an argument
+    motd = "Ready...\n"
+    print(motd)
+
+
+#main Loop
+def mainLoop():
+    # Main Loop Constants
+    MAIN_LOOP_LATENCY=1
+
+    # Main Loop Variables
+    global exitCall
+    exitCall=False
+
+    while exitCall==False:
+        for oscServerId in oscListenServer:
+            oscServerId.recv(MAIN_LOOP_LATENCY)
+
+#Main 
+if __name__ == '__main__':
+    # Verbosely display listen ports if enabled
+    if verboseListenPorts==True:
+        displayListenPorts()
+
+    # Setup, Build, and register each OSC server on each listen port
+    setupOSCServers()
+    buildOSCServers()
+
+    # Display MOTD 
+    displayMOTD()
+    
+    # Call the main loop
+    mainLoop()
