@@ -98,7 +98,7 @@ def displayListenPorts():
 # Setup listen ports
 def setupOSCServers():
     global oscListenServer
-    oscListenServer=[]
+    oscListenServer = []
     try:
         for oscServerId in listenPort:
             oscListenServer.append(Server(oscServerId))
@@ -111,38 +111,39 @@ def setupOSCServers():
 def buildOSCServers():
     # Setup Constants for building OSC servers
     global EXIT_ARG_INDEX
-    EXIT_ARG_INDEX=0
+    EXIT_ARG_INDEX = 0
 
     # Setup variables for building the OSC servers
-    echoFunc=[]
-    echoReg=[]
+    oscSppDef= []
+    oscSppRegistration = []
 
-    #build echoMessage fucntion strings
+    # Build server per port (spp) fucntion strings
     for eachPort in listenPort:
-        tempEchoFunc='def echoMessage'+str(eachPort)+'(path, args):\n'
+        oscSppDefLine = 'def oscServer_'+str(eachPort)+'(path, args):\n'
         #if the path is '/oscwhispers/exit, and the value is 1 then exit
-        tempEchoFunc+='    if path=="/osclisten/exit" and int(args[EXIT_ARG_INDEX])==1:\n'
-        tempEchoFunc+='        global exitCall\n'
-        tempEchoFunc+='        exitCall=True\n'
-        tempEchoFunc+='    else:\n'
+        ### Do this outside of the exec() for server per port (spp) function building
+        oscSppDefLine += '    if path == "/osclisten/exit" and int(args[EXIT_ARG_INDEX]) == 1:\n'
+        oscSppDefLine += '        global exitCall\n'
+        oscSppDefLine += '        exitCall = True\n'
+        oscSppDefLine += '    else:\n'
         #else echo the incoming message
-        tempEchoFunc+='        print("'+str(eachPort)+':", end="")\n'
-        tempEchoFunc+='        print(path, end=" ")\n'
-        tempEchoFunc+='        print(args)\n'
-        tempEchoFunc+='    return'
-        echoFunc.append(tempEchoFunc)
+        oscSppDefLine += '        print("'+str(eachPort)+':", end = "")\n'
+        oscSppDefLine += '        print(path, end = " ")\n'
+        oscSppDefLine += '        print(args)\n'
+        oscSppDefLine +='    return'
+        oscSppDef.append(oscSppDefLine)
     
-    #create echoMessage functions
-    for createFunc in echoFunc:
-        exec(createFunc)
+    # Build server per port (spp) functions
+    for execSppDefLine in oscSppDef:
+        exec(execSppDefLine)
     
-    #build OSC method registration string
+    #build server per port (spp) OSC method registration string
     for eachPort in listenPort:
-        tempEchoReg='oscListenServer[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, echoMessage'+str(eachPort)+')'
-        echoReg.append(tempEchoReg)
+        oscSppBuild = 'oscListenServer[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, oscServer_' + str(eachPort) + ')'
+        oscSppRegistration.append(oscSppBuild)
 
     #register methods for listening on each port as an OSC Server
-    for eachMethod in enumerate(echoReg):
+    for eachMethod in enumerate(oscSppRegistration):
         exec(eachMethod[ENUMERATE_VALUE_INDEX])
 
 def displayMOTD():
@@ -155,13 +156,13 @@ def displayMOTD():
 #main Loop
 def mainLoop():
     # Main Loop Constants
-    MAIN_LOOP_LATENCY=1
+    MAIN_LOOP_LATENCY = 1
 
     # Main Loop Variables
     global exitCall
-    exitCall=False
+    exitCall = False
 
-    while exitCall==False:
+    while exitCall == False:
         for oscServerId in oscListenServer:
             oscServerId.recv(MAIN_LOOP_LATENCY)
 
