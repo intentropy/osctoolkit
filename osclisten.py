@@ -123,12 +123,20 @@ def buildOSCServers():
     for eachPort in listenPort:
         oscSppDefLine = 'def oscServer_' + str(eachPort) + '(path, args):\n'
         #if the path is '/oscwhispers/exit, and the value is 1 then exit
-        ### Do this outside of the exec() for server per port (spp) function building
+        '''
+            The COMMAND_OSC_PATH command parsing and execution should not happen here
+                i.e.
+                    /osclisten/exit (1 | True | !NULL)
+                    should happen elsewhere
+                    along with any other OSC Listen specific OSC commands
+
+            Fix  this in future commits
+        '''
         oscSppDefLine += '    if path == "'  + EXIT_COMMAND_PATH  +  '" and int(args[EXIT_ARG_INDEX]) == 1:\n'
         oscSppDefLine += '        global exitCall\n'
         oscSppDefLine += '        exitCall = True\n'
         oscSppDefLine += '    else:\n'
-        #else echo the incoming message
+        # or else echo the incoming message
         oscSppDefLine += '        print("'+str(eachPort)+':", end = "")\n'
         oscSppDefLine += '        print(path, end = " ")\n'
         oscSppDefLine += '        print(args)\n'
@@ -139,12 +147,12 @@ def buildOSCServers():
     for execSppDefLine in oscSppDef:
         exec(execSppDefLine)
     
-    #build server per port (spp) OSC method registration string
+    # Nuild server per port (spp) OSC method registration string
     for eachPort in listenPort:
         oscSppBuild = 'oscListenServer[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, oscServer_' + str(eachPort) + ')'
         oscSppRegistration.append(oscSppBuild)
 
-    #register methods for listening on each port as an OSC Server
+    # Register methods for listening on each port as an OSC Server
     for eachMethod in enumerate(oscSppRegistration):
         exec(eachMethod[ENUMERATE_VALUE_INDEX])
 
