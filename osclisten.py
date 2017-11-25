@@ -147,13 +147,13 @@ def buildOSCServers():
         exec(eachMethod[ENUMERATE_VALUE_INDEX])
 
 def displayMOTD():
-    # motd variables
+    # MOTD variables
     # Set this in config, and maybe on the fly with an argument
     motd = "Ready...\n"
     print(motd)
 
 
-#main Loop
+# Main Loop
 def mainLoop():
     # Main Loop Constants
     MAIN_LOOP_LATENCY = 1
@@ -166,10 +166,10 @@ def mainLoop():
         for oscServerId in oscListenServer:
             oscServerId.recv(MAIN_LOOP_LATENCY)
 
-#Main 
+## Main 
 if __name__ == '__main__':
     # Verbosely display listen ports if enabled
-    if verboseListenPorts==True:
+    if verboseListenPorts == True:
         displayListenPorts()
 
         # Display MOTD 
