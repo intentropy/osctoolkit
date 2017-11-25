@@ -112,6 +112,8 @@ def buildOSCServers():
     # Setup Constants for building OSC servers
     global EXIT_ARG_INDEX
     EXIT_ARG_INDEX = 0
+    COMMAND_OSC_PATH = '/osclisten'
+    EXIT_COMMAND_PATH = COMMAND_OSC_PATH + '/exit'
 
     # Setup variables for building the OSC servers
     oscSppDef= []
@@ -119,10 +121,10 @@ def buildOSCServers():
 
     # Build server per port (spp) fucntion strings
     for eachPort in listenPort:
-        oscSppDefLine = 'def oscServer_'+str(eachPort)+'(path, args):\n'
+        oscSppDefLine = 'def oscServer_' + str(eachPort) + '(path, args):\n'
         #if the path is '/oscwhispers/exit, and the value is 1 then exit
         ### Do this outside of the exec() for server per port (spp) function building
-        oscSppDefLine += '    if path == "/osclisten/exit" and int(args[EXIT_ARG_INDEX]) == 1:\n'
+        oscSppDefLine += '    if path == "'  + EXIT_COMMAND_PATH  +  '" and int(args[EXIT_ARG_INDEX]) == 1:\n'
         oscSppDefLine += '        global exitCall\n'
         oscSppDefLine += '        exitCall = True\n'
         oscSppDefLine += '    else:\n'
