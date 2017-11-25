@@ -34,9 +34,9 @@ from sys import exit
 from os.path import isfile
 
 ## PROGRAM CONST
-CLEAN=0
-ENUMERATE_ITERATE_INDEX=0
-ENUMERATE_VALUE_INDEX=1
+CLEAN = 0
+ENUMERATE_ITERATE_INDEX = 0
+ENUMERATE_VALUE_INDEX = 1
 
 
 if __name__ == '__main__':
