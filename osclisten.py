@@ -116,7 +116,7 @@ def buildOSCServers():
     EXIT_COMMAND_PATH = COMMAND_OSC_PATH + '/exit'
 
     # Setup variables for building the OSC servers
-    oscSppDef= []
+    oscSppDef = []
     oscSppRegistration = []
 
     # Build server per port (spp) fucntion strings
