@@ -155,7 +155,7 @@ def displayMOTD():
     print(motd)
 
 
-# Main Loop
+## Main Loop
 def mainLoop():
     # Main Loop Constants
     MAIN_LOOP_LATENCY = 1
