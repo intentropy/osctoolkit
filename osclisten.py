@@ -33,8 +33,8 @@ from liblo import Server, ServerError
 from sys import exit
 from os.path import isfile
 
-## PROGRAM CONST
-CLEAN=0
+
+# Global enumeration indicies constants
 ENUMERATE_ITERATE_INDEX=0
 ENUMERATE_VALUE_INDEX=1
 
@@ -75,9 +75,11 @@ if __name__ == '__main__':
     ## Parse Arguments
     # These values may potentially overwrite config arguments
     parser = ArgumentParser()
+    
     # Add arguments
-    #list additional listen ports
+    # List additional listen ports
     parser.add_argument("-l", "--listen", nargs="+", type=int, help="List additional ports to listen for OSC messages on.")
+    # Verbosely display listen ports
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbosely display listen ports on startup.")
     # Set argument vars
     args = parser.parse_args()
@@ -103,7 +105,6 @@ def setupOSCServers():
         for oscServerId in listenPort:
             oscListenServer.append(Server(oscServerId))
     except ServerError as  error:
-        print(str(error))
         exit(error)
 
 
@@ -140,7 +141,7 @@ def buildOSCServers():
         oscSppDefLine += '        print("'+str(eachPort)+':", end = "")\n'
         oscSppDefLine += '        print(path, end = " ")\n'
         oscSppDefLine += '        print(args)\n'
-        oscSppDefLine +='    return'
+        oscSppDefLine += '    return'
         oscSppDef.append(oscSppDefLine)
     
     # Build server per port (spp) functions

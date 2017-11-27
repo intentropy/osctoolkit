@@ -15,8 +15,6 @@ OSC Shout
 
       OSC Shout is a part of osctoolkit
 
-------------------------------------------------------------------------------
-
       osctoolkit is free software; you can redistribute it and/or modify
       it under the terms of the GNU Lesser General Public License as published
       by the Free Software Foundation, either version 3 of the License, or
@@ -31,95 +29,105 @@ OSC Shout
       along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import liblo, sys
+## Import modules
+from argparse import ArgumentParser
+from liblo import Address, AddressError, send
+from sys import exit
 
-#program CONST
-IP_PORT_PATH_ARG_INDEX=1
-IP_PORT_PATH_INDEX=0
-IP_INDEX=0
-PORT_PATH_INDEX=1
-PORT_INDEX=0
-FIRST_PATH_DIR_INDEX=1
-ERROR=1
-CLEAN=0
-HELP_CALL_ARG=1
-HELP_ONLY_ARGUMENTS=2
 
-#OSC CONST
-LAST_OSC_ARG_INDEX=0
-TOTAL_NON_OSC_ARG_INDICES=2
+#Global enumeration indicies constants
+ENUMERATE_ITERATE_INDEX = 0
+ENUMERATE_VALUE_INDEX = 1
 
-#osc Vars
-oscPathDir=[]
-oscPath=''
-oscArgList=[]
 
-def helpAndExit(exitStatus):
-    print('Usage:')
-    print('  oscshout [IPv4]:[port][/osc/path] [args...]')
-    print()
-    print('Optional arguments:')
-    print('  -h, --help    Display help and exit.')
-    print()
-    print('Further Documentation:')
-    print('  https://github.com/ShaneHutter/osctoolkit/wiki')
-    print()
-    sys.exit(exitStatus)
+if __name__ == "__main__":
+    ## Parse Arguments
+    parser = ArgumentParser()
 
-#check for help call
-if len(sys.argv)== HELP_ONLY_ARGUMENTS:
-    if sys.argv[HELP_CALL_ARG]=='-h' or sys.argv[HELP_CALL_ARG]=='--help':
-        helpAndExit(CLEAN)
+    # Argument parsing constant
+    TARGET_ARG_INDEX = 0
+    IP_PORT_PATH_ARG_INDEX = 1
+    IP_PORT_PATH_INDEX = 0
+    IP_INDEX = 0
+    PORT_PATH_INDEX = 1
+    PORT_INDEX = 0
+    TOP_LEVEL_PATH_INDEX = 1
+
+    # Argument parsing variables
+    oscPathElements = []
+    oscTargetPath = ''
+    oscArgList = []
+
+    ## Add Arguments
+    '''
+        The first argument will be an IPv4 address, target port number, and the OSC message path name
+            i.e.    127.0.0.1:9999/foo/bar
+
+        All following arguments will be converted into a string, integer, or floating point value,
+        then sent in the OSC message.
+    '''
+    parser.add_argument("target", nargs=1, help="IP:PORT/Path/to/message")
+    parser.add_argument("message", nargs="+", help="Strings, integers, and floating point values to be sent in the OSC message.")
     
-def sendOSC(target, path, args):
-    #send osc messages in this function
-    libloSend='liblo.send(target, path'
-    for eachArg in range(0,len(args)):
-        libloSend+=', args['+str(eachArg)+']'
-    libloSend+=')'
+    args = parser.parse_args()
+
+    ## Gather ip, port, and path from args.target
+    oscIpPortPath = args.target[TARGET_ARG_INDEX]
+    
+    # Store target IP address
+    oscTargetIp = oscIpPortPath.split(':')[IP_INDEX]
+
+    # Store target port number
+    oscTargetPort = int(oscIpPortPath.split(':')[PORT_PATH_INDEX].split('/')[PORT_INDEX])
+
+    # Store OSC message path
+    for pathElement in enumerate(oscIpPortPath.split(':')[PORT_PATH_INDEX].split('/')):
+        if pathElement[ENUMERATE_ITERATE_INDEX] >= TOP_LEVEL_PATH_INDEX:
+            oscPathElements.append(pathElement[ENUMERATE_VALUE_INDEX])
+    for pathElement in oscPathElements:    
+        oscTargetPath += '/' + pathElement
+                
+    # Gather oscArgList from args.message and convert to an integer, floating point, or string
+    for oscArg in args.message:
+        try:
+            # Conver to an integer
+            oscArgList.append(int(oscArg))
+        except:
+            try:
+                # Convert to a floating point value
+                oscArgList.append(float(oscArg))
+            except:
+                # Keep as a string
+                oscArgList.append(str(oscArg))
+
+
+def sendOSC(target, path, messages):
+    ## Sends OSC Message
+    # Create a string for a liblo.send() command
+    libloSend = 'send(target, path'
+    '''
+        OSC message arguments are sent into the function as a list called messages.  The list 
+        entries of messages must be added to the end of a string executed as a liblo.send() 
+        command.  Each entry in the messages list must be added near the end of the command
+        string, one by one, as the messages list itself, enumerating through each of the 
+        indicies in messages.
+    '''
+    for eachMessage in enumerate(messages):
+        libloSend += ', messages[' + str(eachMessage[ENUMERATE_ITERATE_INDEX]) + ']'
+    libloSend += ')'
     exec(libloSend)
     return
 
-#parse arguments
-if len(sys.argv)<=2:
-    helpAndExit(ERROR)
-else:
-    try:
-        #1st argument syntax: IP:Port/osc/path
-        #the following arguments are based into a list (up to 8)
-        #into sendOSC(target, '/osc/path', argumentList)
-        oscIpPortPath=sys.argv[IP_PORT_PATH_ARG_INDEX].split()[IP_PORT_PATH_INDEX]
-        oscTargetIp=oscIpPortPath.split(':')[IP_INDEX]
-        oscTargetPort=int(oscIpPortPath.split(':')[PORT_PATH_INDEX].split('/')[PORT_INDEX])
-        for pathDir in range(FIRST_PATH_DIR_INDEX,len(oscIpPortPath.split(':')[PORT_PATH_INDEX].split('/'))):
-            oscPathDir.append(oscIpPortPath.split(':')[PORT_PATH_INDEX].split('/')[pathDir])
-        for oscPathDirIndex in range(0,len(oscPathDir)):    
-            oscPath+='/'+oscPathDir[oscPathDirIndex]
-                
-    except:
-        helpAndExit(ERROR)
-    #grab the osc message arguments and store in list
-    firstOscArgIndex=TOTAL_NON_OSC_ARG_INDICES-len(sys.argv)
-    for oscArg in range(firstOscArgIndex, LAST_OSC_ARG_INDEX):
-        oscArgList.append(sys.argv[oscArg])
-    for oscArg in range(0,len(oscArgList)):
-        try:
-            #make arg an int
-            oscArgList[oscArg]=int(oscArgList[oscArg])
-        except:
-            try:
-                #make arg a float
-                oscArgList[oscArg]=float(oscArgList[oscArg])
-            except:
-                #keep arg a string
-                oscArgList[oscArg]=str(oscArgList[oscArg])
-        
-#create OSC Client
-try:
-    oscTarget=liblo.Address(oscTargetIp, oscTargetPort)
-except liblo.AddressError as error:
-    print(str(error))
-    sys.exit(ERROR)
 
-sendOSC(oscTarget, oscPath, oscArgList)
-sys.exit(CLEAN)
+def createOSCClient():
+    # Create OSC Client
+    try:
+        global oscTarget
+        oscTarget = Address(oscTargetIp, oscTargetPort)
+    except AddressError as error:
+        exit(error)
+
+
+if __name__ == "__main__":
+    createOSCClient()
+    sendOSC(oscTarget, oscTargetPath, oscArgList)
