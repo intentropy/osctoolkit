@@ -33,17 +33,15 @@ from liblo import Server, ServerError
 from sys import exit
 from os.path import isfile
 
-<<<<<<< HEAD
 
 # Global enumeration indicies constants
 ENUMERATE_ITERATE_INDEX=0
 ENUMERATE_VALUE_INDEX=1
-=======
+
 ## PROGRAM CONST
 CLEAN = 0
 ENUMERATE_ITERATE_INDEX = 0
 ENUMERATE_VALUE_INDEX = 1
->>>>>>> 7698a24abf3bae42e090cb18bed8463849b51bb3
 
 
 if __name__ == '__main__':
@@ -84,16 +82,13 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     
     # Add arguments
-<<<<<<< HEAD
     # List additional listen ports
     parser.add_argument("-l", "--listen", nargs="+", type=int, help="List additional ports to listen for OSC messages on.")
     # Verbosely display listen ports
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbosely display listen ports on startup.")
-=======
     #list additional listen ports
     parser.add_argument("-l", "--listen", nargs = "+", type = int, help = "List additional ports to listen for OSC messages on.")
     parser.add_argument("-v", "--verbose", action = "store_true", help = "Verbosely display listen ports on startup.")
->>>>>>> 7698a24abf3bae42e090cb18bed8463849b51bb3
     # Set argument vars
     args = parser.parse_args()
     if args.verbose:
