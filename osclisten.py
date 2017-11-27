@@ -38,11 +38,6 @@ from os.path import isfile
 ENUMERATE_ITERATE_INDEX=0
 ENUMERATE_VALUE_INDEX=1
 
-## PROGRAM CONST
-CLEAN = 0
-ENUMERATE_ITERATE_INDEX = 0
-ENUMERATE_VALUE_INDEX = 1
-
 
 if __name__ == '__main__':
     # Declare config constants
@@ -86,9 +81,6 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--listen", nargs="+", type=int, help="List additional ports to listen for OSC messages on.")
     # Verbosely display listen ports
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbosely display listen ports on startup.")
-    #list additional listen ports
-    parser.add_argument("-l", "--listen", nargs = "+", type = int, help = "List additional ports to listen for OSC messages on.")
-    parser.add_argument("-v", "--verbose", action = "store_true", help = "Verbosely display listen ports on startup.")
     # Set argument vars
     args = parser.parse_args()
     if args.verbose:
