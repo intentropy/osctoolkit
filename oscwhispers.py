@@ -123,24 +123,24 @@ if __name__ == '__main__':
         if lineRead:
             lineReadProtoComment = lineRead.split(CONFIG_COMMENT_SYMBOL)[CONFIG_PROTO_COMMENT].split(' ')
             # Verbosity settings
-            if lineRead.split()[CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_listen_port':
-                verboseListenPort = bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+            if lineReadProtoComment[CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_listen_port':
+                verboseListenPort = bool(int(lineReadProtoComment[CONFIG_VALUE_ARG]))
 
             # add verbose command port for displaying oscwhipsers command and control port number
             
-            if lineRead.split()[CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_incoming_osc':
-                verboseIncomingOsc = bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+            if lineReadProtoComment[CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_incoming_osc':
+                verboseIncomingOsc = bool(int(lineReadProtoComment[CONFIG_VALUE_ARG]))
             
-            if lineRead.split()[CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_outgoing_osc':
-                verboseOutgoingOsc = bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+            if lineReadProtoComment[CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_outgoing_osc':
+                verboseOutgoingOsc = bool(int(lineReadProtoComment[CONFIG_VALUE_ARG]))
             
-            if lineRead.split()[CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_forwarding_list':
-                verboseForwardingList = bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+            if lineReadProtoComment[CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_forwarding_list':
+                verboseForwardingList = bool(int(lineReadProtoComment[CONFIG_VALUE_ARG]))
 
     
             # OSC Settings
-            if lineRead.split()[CONFIG_PROPERTY_ARG] == 'oscwhispers.listen_port':
-                listenPort = int(lineRead.split()[CONFIG_VALUE_ARG])
+            if lineReadProtoComment[CONFIG_PROPERTY_ARG] == 'oscwhispers.listen_port':
+                listenPort = int(lineReadProtoComment[CONFIG_VALUE_ARG])
 
     ## Parse Arguments
     '''
