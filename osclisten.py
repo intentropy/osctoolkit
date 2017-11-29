@@ -39,12 +39,15 @@ ENUMERATE_ITERATE_INDEX=0
 ENUMERATE_VALUE_INDEX=1
 
 
+## Load config file and parse arguments
 if __name__ == '__main__':
     # Declare config constants
     CONFIG_PROPERTY_ARG = 0
     CONFIG_VALUE_ARG = 1
     CONFIG_PROTO_COMMENT = 0
-    CONFIG_FILE_LOCATIONS = ['osctoolkit.conf', '/home/$USER/.config/osctoolkit.conf', '/etc/osctoolkit.conf']
+    CONFIG_FILE_LOCATIONS = ['osctoolkit.conf', 
+            '/home/$USER/.config/osctoolkit.conf', 
+            '/etc/osctoolkit.conf']
     CONFIG_COMMENT_SYMBOL = '#'
     
     # declare global config and argument vars with default values
@@ -52,15 +55,17 @@ if __name__ == '__main__':
     verboseListenPorts = False
     global listenPort
     listenPort = []
-    
+
+    ## Load Config File
     for checkConf in CONFIG_FILE_LOCATIONS:
         if isfile(checkConf):
             configFileLocation = checkConf
             break
-    ## Load Config File
     configFile = open(configFileLocation, 'r')
     configLines = configFile.read().split('\n')
     configFile.close()
+
+    # Parse config file lines
     for lineRead in configLines:
         if lineRead:
             lineReadProtoComment = lineRead.split(CONFIG_COMMENT_SYMBOL)[CONFIG_PROTO_COMMENT].split(' ')
@@ -74,7 +79,7 @@ if __name__ == '__main__':
     
     ## Parse Arguments
     # These values may potentially overwrite config arguments
-    parser = ArgumentParser()
+    parser = ArgumentParser(description='Display incoming Open Sound Control messages.')
     
     # Add arguments
     # List additional listen ports
@@ -95,6 +100,7 @@ def displayListenPorts():
     for portIdNum in listenPort:
         print('Listening for OSC on port number: ', end = '')
         print(portIdNum)
+    return
         
 
 # Setup listen ports
@@ -106,6 +112,7 @@ def setupOSCServers():
             oscListenServer.append(Server(oscServerId))
     except ServerError as  error:
         exit(error)
+    return
 
 
 # Build the functions for echoing messages on each port, then regiter as OSC servers
@@ -156,12 +163,14 @@ def buildOSCServers():
     # Register methods for listening on each port as an OSC Server
     for eachMethod in enumerate(oscSppRegistration):
         exec(eachMethod[ENUMERATE_VALUE_INDEX])
+    return
 
 def displayMOTD():
     # MOTD variables
     # Set this in config, and maybe on the fly with an argument
     motd = "Ready...\n"
     print(motd)
+    return
 
 
 ## Main Loop
@@ -176,6 +185,7 @@ def mainLoop():
     while exitCall == False:
         for oscServerId in oscListenServer:
             oscServerId.recv(MAIN_LOOP_LATENCY)
+    return
 
 ## Main 
 if __name__ == '__main__':
