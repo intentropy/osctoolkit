@@ -30,7 +30,7 @@ OSC Whispers
 
 ## Import modules
 from argparse import ArgumentParser
-from liblo import Address, AddressError, send, Server
+from liblo import Address, AddressError, send, Server, ServerError
 from sys import exit
 from os.path import isfile
 
@@ -86,11 +86,11 @@ if __name__ == '__main__':
     # Configuration file contants
     CONFIG_PROPERTY_ARG = 0
     CONFIG_VALUE_ARG = 1
-    CONFIG_PROTO_COMMENT = 0
+    CONFIG_PROTO_COMMENT = OTW_PROTO_COMMENT = 0
+    CONFIG_COMMENT_SYMBOL = OTW_COMMENT_SYMBOL = '#'
     CONFIG_FILE_LOCATIONS = ['osctoolkit.conf', 
             '/home/$USER/.config/osctoolkit.conf', 
             '/etc/osctoolkit.conf']
-    CONFIG_COMMENT_SYMBOL = '#'
    
     # Declare global config variables with default values
     # globals
@@ -169,27 +169,31 @@ if __name__ == '__main__':
             -q is globally quite, it will ignore all configuration verbosity options and run
                 OSC Whispers in quite mode
 
+            -Q specific quite may be a good option to disable verbosity options that are set up 
+                in the configuration file, however it will remain mutually exclusive from specific 
+                verbosity
+
     '''
-    parser = ArgumentParser(description='An Open Sound Control forwarding agent.')
+    parser = ArgumentParser(description = 'An Open Sound Control forwarding agent.')
 
     # Add arguments
     
     # OTW File(s)
     # optionally specify multiple otw files and have all the forwarding definitions loaded
-    parser.add_argument('-f', '--file', dest='otw', nargs='+', help='Specifies OTW files to be loaded into OSC Whispers.')
+    parser.add_argument('-f', '--file', dest = 'otw', nargs = '+', help = 'Specifies OTW files to be loaded into OSC Whispers.')
 
     # Verbosity Arguments
     verbosityGroup = parser.add_mutually_exclusive_group()
 
 
     # Global verbosity
-    verbosityGroup.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Verbosely output all information')
+    verbosityGroup.add_argument('-v', '--verbose', dest = 'verbose', action = 'store_true', help = 'Verbosely output all information')
 
     # Specific verbosity
-    verbosityGroup.add_argument('-V', dest='specificVerbosity', choices=['in', 'out', 'listen', 'command', 'forward'], nargs='+', help='Verbosely output specific information.')
+    verbosityGroup.add_argument('-V', dest = 'specificVerbosity', choices = ['in', 'out', 'listen', 'command', 'forward'], nargs = '+', help = 'Verbosely output specific information.')
 
     # Quite Mode
-    verbosityGroup.add_argument('-q', '--quite', dest='quite', action='store_true', help='Run without any verbose output regardless of verbosity setting in configuration file.')
+    verbosityGroup.add_argument('-q', '--quite', dest = 'quite', action = 'store_true', help = 'Run without any verbose output regardless of verbosity setting in configuration file.')
 
     # Set argument values
     args = parser.parse_args()
@@ -240,25 +244,25 @@ if __name__ == '__main__':
         # Parse OTW lines
         # do this like the new config file comment methods
         for lineRead in otwLines:
-            if lineRead != "" and lineRead.strip().startswith('#') == False:
-                
-                if lineRead.strip().startswith("/") == True:
+            if lineRead: 
+                lineReadProtoComment = lineRead.split(OTW_COMMENT_SYMBOL)[OTW_PROTO_COMMENT].split()
+                if lineRead.strip().startswith("/"):
                     #parse forwarding destinations line
-                    forwardingPathPrefix = lineRead.split()[PATH_PREFIX_FILE_INDEX].strip('/')
-                    
-                    if lineRead.split()[TRUNCATE_INDICATOR_FILE_INDEX] == "+":
+                    forwardingPathPrefix = lineReadProtoComment[PATH_PREFIX_FILE_INDEX].strip('/')
+                    if lineReadProtoComment[TRUNCATE_INDICATOR_FILE_INDEX] == "+":
                         #do not truncate prefix of path
-                        truncatePathPrefix=False
-                    elif lineRead.split()[TRUNCATE_INDICATOR_FILE_INDEX] == "-":
+                        truncatePathPrefix = False
+                    elif lineReadProtoComment[TRUNCATE_INDICATOR_FILE_INDEX] == "-":
                         #truncate prefix of path
                         truncatePathPrefix = True
                     else:
+                        # Throw better exceptions
                         print('Error: OTW file ' + otwFileName  + ' contains incorrect truncation indicator')
                         exit(ERROR)
                     
                     pathPrefixInfo = [forwardingPathPrefix,truncatePathPrefix]
     
-                    for destination in range(DESTINATIONS_START_INDEX,len(lineRead.split())):
+                    for destination in range(DESTINATIONS_START_INDEX,len(lineReadProtoComment)):
                         '''
                         load the destinations into its own list, and load the index of the 
                         destination into the forwardingList
@@ -288,9 +292,9 @@ if __name__ == '__main__':
 #setup OSC Server
 try:
     if verboseListenPort == True:
-        print('Listening on port: ', end='')
+        print('Listening on port: ', end = '')
         print(listenPort)
-    oscListenServer=Server(listenPort)
+    oscListenServer = Server(listenPort)
 except ServerError as error:
     exit(error)
 
