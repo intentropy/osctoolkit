@@ -36,17 +36,14 @@ from os.path import isfile
 
 
 '''
-    ToDo:
-
-        * Add a command and control OSC Server for issuing commands to oscwhipsers using OSC messages
-
-        * Add an OSC Client to send debug information out as a OSC Message
-            Message could be things like a "read to go" message, "shutting down" message,
-            and maybe errors, etc...
-
-        * Add logging
-
-        * Input and output verbosity doesn't appear to be implemented
+ToDo:
+    * Add a command and control OSC Server for issuing commands to oscwhipsers using OSC messages
+    * Add an OSC Client to send debug information out as a OSC Message
+        Message could be things like a "read to go" message, "shutting down" message,
+        and maybe errors, etc...
+    * Add logging
+    * Input and output verbosity doesn't appear to be implemented
+    * Use a class for configuration file parsing
 '''
 
 
@@ -55,11 +52,9 @@ CLEAN = 0
 ERROR = 65535
 ENUMERATE_ITERATE_INDEX = 0
 OTW_FILE_ARG = 1
-REQUIRED_ARGUMENTS = 2
 MAIN_LOOP_LATENCY = 1
-HELP_CALL_ARG = 1
-HELP_ONLY_ARGUMENTS = 2
 
+### Create classes
 #OSC CONST
 IP_INDEX = 0
 PORT_INDEX = 1
