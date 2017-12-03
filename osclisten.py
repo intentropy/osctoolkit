@@ -40,7 +40,9 @@ ENUMERATE_VALUE_INDEX=1
 
 
 ## Load config file and parse arguments
-if __name__ == '__main__':
+class ConfigFile:
+    """Load and parse OSC Toolkit configuration file."""
+    ## Class variables for loading and parsing the configuration file
     # Declare config constants
     CONFIG_PROPERTY_ARG = 0
     CONFIG_VALUE_ARG = 1
@@ -50,54 +52,73 @@ if __name__ == '__main__':
             '/etc/osctoolkit.conf']
     CONFIG_COMMENT_SYMBOL = '#'
     
-    # declare global config and argument vars with default values
-    global verboseListenPorts
-    verboseListenPorts = False
-    global listenPort
-    listenPort = []
 
-    ## Load Config File
-    for checkConf in CONFIG_FILE_LOCATIONS:
-        if isfile(checkConf):
-            configFileLocation = checkConf
-            break
-    configFile = open(configFileLocation, 'r')
-    configLines = configFile.read().split('\n')
-    configFile.close()
+    def __init__(self):
+        # declare global config and argument vars with default values
+        self.verboseListenPorts = False
+        self.listenPort = []
 
+        # Run initialization functions
+        self.loadConfigFile()
+        self.parseConfigFile()
+    
+    def loadConfigFile(self):
+        ## Load Config File
+        for checkConf in self.CONFIG_FILE_LOCATIONS:
+            if isfile(checkConf):
+                configFileLocation = checkConf
+                break
+        configFile = open(configFileLocation, 'r')
+        self.configLines = configFile.read().split('\n')
+        configFile.close()
+
+    def parseConfigFile(self):
     # Parse config file lines
-    for lineRead in configLines:
-        if lineRead:
-            lineReadProtoComment = lineRead.split(CONFIG_COMMENT_SYMBOL)[CONFIG_PROTO_COMMENT].split(' ')
-            # Verbosity Settings
-            if lineReadProtoComment[CONFIG_PROPERTY_ARG] == 'osclisten.verbose_listen_ports':
-                verboseListenPorts = bool(int(lineRead.split()[CONFIG_VALUE_ARG]))
+        for lineRead in self.configLines:
+            if lineRead:
+                lineReadProtoComment = lineRead.split(self.CONFIG_COMMENT_SYMBOL)[self.CONFIG_PROTO_COMMENT].split(' ')
+                # Verbosity Settings
+                if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.verbose_listen_ports':
+                    self.verboseListenPorts = bool(int(lineRead.split()[self.CONFIG_VALUE_ARG]))
+        
+                # OSC Settings
+                if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.listen_port':
+                    self.listenPort.append(int(lineRead.split()[self.CONFIG_VALUE_ARG]))
     
-            # OSC Settings
-            if lineReadProtoComment[CONFIG_PROPERTY_ARG] == 'osclisten.listen_port':
-                listenPort.append(int(lineRead.split()[CONFIG_VALUE_ARG]))
-    
-    ## Parse Arguments
-    # These values may potentially overwrite config arguments
-    parser = ArgumentParser(description='Display incoming Open Sound Control messages.')
-    
-    # Add arguments
-    # List additional listen ports
-    parser.add_argument("-l", "--listen", nargs="+", type=int, help="List additional ports to listen for OSC messages on.")
-    # Verbosely display listen ports
-    parser.add_argument("-v", "--verbose", action="store_true", help="Verbosely display listen ports on startup.")
-    # Set argument vars
-    args = parser.parse_args()
-    if args.verbose:
-        verboseListenPorts = args.verbose
-    if args.listen:
-        for port in args.listen:
-            listenPort.append(port)
+
+class ParseArgs:
+    """Parse command line arguments"""
+
+    def __init__(self):
+        # declare global config and argument vars with default values
+        self.verboseListenPorts = False
+        self.listenPort = []
+
+        # run initilization methods
+        self.parse()
+
+    def parse(self):
+        ## Parse Arguments
+        # These values may potentially overwrite config arguments
+        parser = ArgumentParser(description='Display incoming Open Sound Control messages.')
+        
+        # Add arguments
+        # List additional listen ports
+        parser.add_argument("-l", "--listen", nargs="+", type=int, help="List additional ports to listen for OSC messages on.")
+        # Verbosely display listen ports
+        parser.add_argument("-v", "--verbose", action="store_true", help="Verbosely display listen ports on startup.")
+        # Set argument vars
+        args = parser.parse_args()
+        if args.verbose:
+            self.verboseListenPorts = args.verbose
+        if args.listen:
+            for port in args.listen:
+                self.listenPort.append(port)
     
 
 # Verbosely display listen ports
 def displayListenPorts():
-    for portIdNum in listenPort:
+    for portIdNum in config.listenPort:
         print('Listening for OSC on port number: ', end = '')
         print(portIdNum)
     return
@@ -108,7 +129,7 @@ def setupOSCServers():
     global oscListenServer
     oscListenServer = []
     try:
-        for oscServerId in listenPort:
+        for oscServerId in config.listenPort:
             oscListenServer.append(Server(oscServerId))
     except ServerError as  error:
         exit(error)
@@ -128,7 +149,7 @@ def buildOSCServers():
     oscSppRegistration = []
 
     # Build server per port (spp) fucntion strings
-    for eachPort in listenPort:
+    for eachPort in config.listenPort:
         oscSppDefLine = 'def oscServer_' + str(eachPort) + '(path, args):\n'
         #if the path is '/oscwhispers/exit, and the value is 1 then exit
         '''
@@ -156,7 +177,7 @@ def buildOSCServers():
         exec(execSppDefLine)
     
     # Nuild server per port (spp) OSC method registration string
-    for eachPort in listenPort:
+    for eachPort in config.listenPort:
         oscSppBuild = 'oscListenServer[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, oscServer_' + str(eachPort) + ')'
         oscSppRegistration.append(oscSppBuild)
 
@@ -189,8 +210,16 @@ def mainLoop():
 
 ## Main 
 if __name__ == '__main__':
+
+
+    # Load Config file
+    config = ConfigFile()
+
+    # Parse Arguments
+    arguments = ParseArgs()
+    
     # Verbosely display listen ports if enabled
-    if verboseListenPorts == True:
+    if config.verboseListenPorts or arguments.verboseListenPorts == True:
         displayListenPorts()
 
         # Display MOTD 
