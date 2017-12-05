@@ -27,207 +27,39 @@ OSC Listen
       along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-## Import modules
-from argparse import ArgumentParser
-from liblo import Server, ServerError
-from sys import exit
-from os.path import isfile
+from osctoolkit import osclisten
 
 
-# Global enumeration indicies constants
-ENUMERATE_ITERATE_INDEX=0
-ENUMERATE_VALUE_INDEX=1
+if __name__ == '__main__':
 
-
-## Load config file and parse arguments
-class ConfigFile:
-    """Load and parse OSC Toolkit configuration file."""
-    ## Class variables for loading and parsing the configuration file
-    # Declare config constants
-    CONFIG_PROPERTY_ARG = 0
-    CONFIG_VALUE_ARG = 1
-    CONFIG_PROTO_COMMENT = 0
+    # Load Config file
+    '''
+        osclisten.ConfigFile takes the potential locations of the configuration file in order in which
+        to check for the file.  Once a file is found it is loaded (osclisten.ConfigFile.loadConfigFile),
+        and broken into lines.  The lines are passed to osclisten.ConfigFile.parseConfigFile, and
+        the values are stored in a dictionary called configData.
+    '''
     CONFIG_FILE_LOCATIONS = ['osctoolkit.conf', 
             '/home/$USER/.config/osctoolkit.conf', 
             '/etc/osctoolkit.conf']
-    CONFIG_COMMENT_SYMBOL = '#'
-    
-
-    def __init__(self):
-        # declare global config and argument vars with default values
-        self.verboseListenPorts = False
-        self.listenPort = []
-
-        # Run initialization functions
-        self.loadConfigFile()
-        self.parseConfigFile()
-    
-    def loadConfigFile(self):
-        ## Load Config File
-        for checkConf in self.CONFIG_FILE_LOCATIONS:
-            if isfile(checkConf):
-                configFileLocation = checkConf
-                break
-        configFile = open(configFileLocation, 'r')
-        self.configLines = configFile.read().split('\n')
-        configFile.close()
-
-    def parseConfigFile(self):
-    # Parse config file lines
-        for lineRead in self.configLines:
-            if lineRead:
-                lineReadProtoComment = lineRead.split(self.CONFIG_COMMENT_SYMBOL)[self.CONFIG_PROTO_COMMENT].split(' ')
-                # Verbosity Settings
-                if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.verbose_listen_ports':
-                    self.verboseListenPorts = bool(int(lineRead.split()[self.CONFIG_VALUE_ARG]))
-        
-                # OSC Settings
-                if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.listen_port':
-                    self.listenPort.append(int(lineRead.split()[self.CONFIG_VALUE_ARG]))
-    
-
-class ParseArgs:
-    """Parse command line arguments"""
-
-    def __init__(self):
-        # declare global config and argument vars with default values
-        self.verboseListenPorts = False
-        self.listenPort = []
-
-        # run initilization methods
-        self.parse()
-
-    def parse(self):
-        ## Parse Arguments
-        # These values may potentially overwrite config arguments
-        parser = ArgumentParser(description='Display incoming Open Sound Control messages.')
-        
-        # Add arguments
-        # List additional listen ports
-        parser.add_argument("-l", "--listen", nargs="+", type=int, help="List additional ports to listen for OSC messages on.")
-        # Verbosely display listen ports
-        parser.add_argument("-v", "--verbose", action="store_true", help="Verbosely display listen ports on startup.")
-        # Set argument vars
-        args = parser.parse_args()
-        if args.verbose:
-            self.verboseListenPorts = args.verbose
-        if args.listen:
-            for port in args.listen:
-                self.listenPort.append(port)
-    
-
-# Verbosely display listen ports
-def displayListenPorts():
-    for portIdNum in config.listenPort:
-        print('Listening for OSC on port number: ', end = '')
-        print(portIdNum)
-    return
-        
-
-# Setup listen ports
-def setupOSCServers():
-    global oscListenServer
-    oscListenServer = []
-    try:
-        for oscServerId in config.listenPort:
-            oscListenServer.append(Server(oscServerId))
-    except ServerError as  error:
-        exit(error)
-    return
-
-
-# Build the functions for echoing messages on each port, then regiter as OSC servers
-def buildOSCServers():
-    # Setup Constants for building OSC servers
-    global EXIT_ARG_INDEX
-    EXIT_ARG_INDEX = 0
-    COMMAND_OSC_PATH = '/osclisten'
-    EXIT_COMMAND_PATH = COMMAND_OSC_PATH + '/exit'
-
-    # Setup variables for building the OSC servers
-    oscSppDef = []
-    oscSppRegistration = []
-
-    # Build server per port (spp) fucntion strings
-    for eachPort in config.listenPort:
-        oscSppDefLine = 'def oscServer_' + str(eachPort) + '(path, args):\n'
-        #if the path is '/oscwhispers/exit, and the value is 1 then exit
-        '''
-            The COMMAND_OSC_PATH command parsing and execution should not happen here
-                i.e.
-                    /osclisten/exit (1 | True | !NULL)
-                    should happen elsewhere
-                    along with any other OSC Listen specific OSC commands
-
-            Fix  this in future commits
-        '''
-        oscSppDefLine += '    if path == "'  + EXIT_COMMAND_PATH  +  '" and int(args[EXIT_ARG_INDEX]) == 1:\n'
-        oscSppDefLine += '        global exitCall\n'
-        oscSppDefLine += '        exitCall = True\n'
-        oscSppDefLine += '    else:\n'
-        # or else echo the incoming message
-        oscSppDefLine += '        print("'+str(eachPort)+':", end = "")\n'
-        oscSppDefLine += '        print(path, end = " ")\n'
-        oscSppDefLine += '        print(args)\n'
-        oscSppDefLine += '    return'
-        oscSppDef.append(oscSppDefLine)
-    
-    # Build server per port (spp) functions
-    for execSppDefLine in oscSppDef:
-        exec(execSppDefLine)
-    
-    # Nuild server per port (spp) OSC method registration string
-    for eachPort in config.listenPort:
-        oscSppBuild = 'oscListenServer[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, oscServer_' + str(eachPort) + ')'
-        oscSppRegistration.append(oscSppBuild)
-
-    # Register methods for listening on each port as an OSC Server
-    for eachMethod in enumerate(oscSppRegistration):
-        exec(eachMethod[ENUMERATE_VALUE_INDEX])
-    return
-
-def displayMOTD():
-    # MOTD variables
-    # Set this in config, and maybe on the fly with an argument
-    motd = "Ready...\n"
-    print(motd)
-    return
-
-
-## Main Loop
-def mainLoop():
-    # Main Loop Constants
-    MAIN_LOOP_LATENCY = 1
-
-    # Main Loop Variables
-    global exitCall
-    exitCall = False
-
-    while exitCall == False:
-        for oscServerId in oscListenServer:
-            oscServerId.recv(MAIN_LOOP_LATENCY)
-    return
-
-## Main 
-if __name__ == '__main__':
-
-
-    # Load Config file
-    config = ConfigFile()
+    config = osclisten.ConfigFile(CONFIG_FILE_LOCATIONS)
 
     # Parse Arguments
-    arguments = ParseArgs()
+    arguments = osclisten.ParseArgs()
     
+    # Setup, Build, and register each OSC server on each listen port from config and args
+    listenPorts = config.configData['listenPorts'] + arguments.argData['listenPorts']
+    osclisten.setupOSCServers(listenPorts)
+    osclisten.buildOSCServers(listenPorts)
+
     # Verbosely display listen ports if enabled
-    if config.verboseListenPorts or arguments.verboseListenPorts == True:
-        displayListenPorts()
-
+    if config.configData['verboseListenPorts'] or arguments.argData['verboseListenPorts'] == True:
+        osclisten.displayListenPorts(listenPorts)
         # Display MOTD 
-        displayMOTD()
-
-    # Setup, Build, and register each OSC server on each listen port
-    setupOSCServers()
-    buildOSCServers()
+        osclisten.displayMOTD()
     
-    # Call the main loop
-    mainLoop()
+    # Main Loop
+    MAIN_LOOP_LATENCY = 1
+    while osclisten.exitCall == False:
+        for oscServerId in osclisten.oscListenServers:
+            oscServerId.recv(MAIN_LOOP_LATENCY)
