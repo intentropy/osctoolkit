@@ -176,20 +176,36 @@ if __name__ == '__main__':
     
     # OTW File(s)
     # optionally specify multiple otw files and have all the forwarding definitions loaded
-    parser.add_argument('-f', '--file', dest = 'otw', nargs = '+', help = 'Specifies OTW files to be loaded into OSC Whispers.')
+    parser.add_argument('-f', 
+            '--file', 
+            dest = 'otw', 
+            nargs = '+', 
+            help = 'Specifies OTW files to be loaded into OSC Whispers.')
 
     # Verbosity Arguments
     verbosityGroup = parser.add_mutually_exclusive_group()
 
 
     # Global verbosity
-    verbosityGroup.add_argument('-v', '--verbose', dest = 'verbose', action = 'store_true', help = 'Verbosely output all information')
+    verbosityGroup.add_argument('-v', 
+            '--verbose', 
+            dest = 'verbose', 
+            action = 'store_true', 
+            help = 'Verbosely output all information')
 
     # Specific verbosity
-    verbosityGroup.add_argument('-V', dest = 'specificVerbosity', choices = ['in', 'out', 'listen', 'command', 'forward'], nargs = '+', help = 'Verbosely output specific information.')
+    verbosityGroup.add_argument('-V', 
+            dest = 'specificVerbosity', 
+            choices = ['in', 'out', 'listen', 'command', 'forward'], 
+            nargs = '+', 
+            help = 'Verbosely output specific information.')
 
     # Quite Mode
-    verbosityGroup.add_argument('-q', '--quite', dest = 'quite', action = 'store_true', help = 'Run without any verbose output regardless of verbosity setting in configuration file.')
+    verbosityGroup.add_argument('-q', 
+            '--quite', 
+            dest = 'quite', 
+            action = 'store_true', 
+            help = 'Run without any verbose output regardless of verbosity setting in configuration file.')
 
     # Set argument values
     args = parser.parse_args()
