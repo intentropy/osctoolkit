@@ -27,7 +27,7 @@ OSC Listen
       along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from osctoolkit import osclisten
+from osctoolkit import OSCListen
 
 
 if __name__ == '__main__':
@@ -42,24 +42,24 @@ if __name__ == '__main__':
     CONFIG_FILE_LOCATIONS = ['osctoolkit.conf', 
             '/home/$USER/.config/osctoolkit.conf', 
             '/etc/osctoolkit.conf']
-    config = osclisten.ConfigFile(CONFIG_FILE_LOCATIONS)
+    config = OSCListen.ConfigFile(CONFIG_FILE_LOCATIONS)
 
     # Parse Arguments
-    arguments = osclisten.ParseArgs()
+    arguments = OSCListen.ParseArgs()
     
     # Setup, Build, and register each OSC server on each listen port from config and args
     listenPorts = config.configData['listenPorts'] + arguments.argData['listenPorts']
-    osclisten.setupOSCServers(listenPorts)
-    osclisten.buildOSCServers(listenPorts)
+    OSCListen.setupOSCServers(listenPorts)
+    OSCListen.buildOSCServers(listenPorts)
 
     # Verbosely display listen ports if enabled
     if config.configData['verboseListenPorts'] or arguments.argData['verboseListenPorts'] == True:
-        osclisten.displayListenPorts(listenPorts)
+        OSCListen.displayListenPorts(listenPorts)
         # Display MOTD 
-        osclisten.displayMOTD()
+        OSCListen.displayMOTD()
     
     # Main Loop
     MAIN_LOOP_LATENCY = 1
-    while osclisten.exitCall == False:
-        for oscServerId in osclisten.oscListenServers:
+    while OSCListen.exitCall == False:
+        for oscServerId in OSCListen.oscListenServers:
             oscServerId.recv(MAIN_LOOP_LATENCY)

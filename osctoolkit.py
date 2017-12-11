@@ -21,7 +21,7 @@ ENUMERATE_VALUE_INDEX = 1
 
 
 ### --- OSC Listen Class ---------------------------------------------------------------------
-class osclisten:
+class OSCListen:
     """This class contains all methods and properties for running OSC Listen"""
 
     # Declare class variables
@@ -117,7 +117,7 @@ class osclisten:
     def setupOSCServers(listenPorts):
         try:
             for oscServerId in listenPorts:
-                osclisten.oscListenServers.append(Server(oscServerId))
+                OSCListen.oscListenServers.append(Server(oscServerId))
         except ServerError as  error:
             exit(error)
         return
@@ -149,7 +149,7 @@ class osclisten:
                 Fix  this in future commits
             '''
             oscSppDefLine += '    if path == "'  + EXIT_COMMAND_PATH  +  '" and int(args[EXIT_ARG_INDEX]) == 1:\n'
-            oscSppDefLine += '        osclisten.exitCall = True\n'
+            oscSppDefLine += '        OSCListen.exitCall = True\n'
             oscSppDefLine += '    else:\n'
             # or else echo the incoming message
             oscSppDefLine += '        print("'+str(eachPort)+': ", end = "")\n'
@@ -164,7 +164,7 @@ class osclisten:
         
         # Build server per port (spp) OSC method registration string
         for eachPort in listenPorts:
-            oscSppBuild = 'osclisten.oscListenServers[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, oscServer_' + str(eachPort) + ')'
+            oscSppBuild = 'OSCListen.oscListenServers[eachMethod[ENUMERATE_ITERATE_INDEX]].add_method(None, None, oscServer_' + str(eachPort) + ')'
             oscSppRegistration.append(oscSppBuild)
     
         # Register methods for listening on each port as an OSC Server
