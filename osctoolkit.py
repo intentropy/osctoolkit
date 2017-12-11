@@ -11,24 +11,20 @@ from sys import exit
 from os.path import isfile
 
 
-
-
 # Global enumeration indicies constants
 ENUMERATE_ITERATE_INDEX = 0
 ENUMERATE_VALUE_INDEX = 1
 
 
 
-
 ### --- OSC Listen Class ---------------------------------------------------------------------
 class OSCListen:
     """This class contains all methods and properties for running OSC Listen"""
-
+    
     # Declare class variables
     exitCall = False
     oscListenServers = []
 
-        ## Load config file and parse arguments
     class ConfigFile:
         """Load and parse OSC Toolkit configuration file."""
         ## Class variables for loading and parsing the configuration file
@@ -42,7 +38,9 @@ class OSCListen:
         def __init__(self, configFileLocations):
             # declare global config and argument vars with default values
             self.verboseListenPorts = False
+            self.verboseMotd = False
             self.listenPorts = []
+            self.motd = ''
     
             # Run initialization functions
             self.configData = self.parseConfigFile(self.loadConfigFile(configFileLocations))
@@ -66,12 +64,22 @@ class OSCListen:
                     # Verbosity Settings
                     if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.verbose_listen_ports':
                         self.verboseListenPorts = bool(int(lineReadProtoComment[self.CONFIG_VALUE_ARG]))
+                    
+                    if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.verbose_motd':
+                        self.verboseMotd = bool(int(lineReadProtoComment[self.CONFIG_VALUE_ARG]))
+
+                    if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.motd':
+                        for configArg in range(self.CONFIG_VALUE_ARG, len(lineReadProtoComment)):
+                            self.motd += lineReadProtoComment[configArg] + ' '
             
                     # OSC Settings
                     if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.listen_port':
                         self.listenPorts.append(int(lineReadProtoComment[self.CONFIG_VALUE_ARG]))
 
-            return {'verboseListenPorts': self.verboseListenPorts, 'listenPorts': self.listenPorts}
+            return {'verboseListenPorts': self.verboseListenPorts, 
+                    'listenPorts': self.listenPorts, 
+                    'verboseMotd': self.verboseMotd, 
+                    'motd': self.motd}
         
     
     class ParseArgs:
@@ -80,6 +88,7 @@ class OSCListen:
         def __init__(self):
             # declare global config and argument vars with default values
             self.verboseListenPorts = False
+            self.verboseMotd = False
             self.listenPorts = []
     
             # run initilization methods
@@ -90,19 +99,35 @@ class OSCListen:
             # These values may potentially overwrite config arguments
             parser = ArgumentParser(description = 'Display incoming Open Sound Control messages.')
             
-            # Add arguments
+            ## Add arguments
             # List additional listen ports
-            parser.add_argument("-l", "--listen", dest = "ports", nargs = "+", type = int, help = "List additional ports to listen for OSC messages on.")
+            parser.add_argument("-l",
+                    "--listen", 
+                    dest = "ports", 
+                    nargs = "+", 
+                    type = int, 
+                    help = "List additional ports to listen for OSC messages on.")
+
             # Verbosely display listen ports
-            parser.add_argument("-v", "--verbose", action = "store_true", help = "Verbosely display listen ports on startup.")
+            parser.add_argument("-v", 
+                    "--verbose", 
+                    action = "store_true", 
+                    help = "Verbosely display listen ports and MOTD on startup.")
+
+            # Add specific verbosity for listen ports and MOTD (see as OSC Whispers arg parsing)
+            # Add quiet mode to halt verbosity
+            # Add specific quiet mode (see OSC Whispers arg parsing)
+
             # Set argument vars
             args = parser.parse_args()
             if args.verbose:
-                self.verboseListenPorts = args.verbose
+                self.verboseListenPorts = self.verboseMotd = args.verbose
             if args.ports:
                 for port in args.ports:
                     self.listenPorts.append(port)
-            return {'verboseListenPorts': self.verboseListenPorts, 'listenPorts': self.listenPorts}
+            return {'verboseListenPorts': self.verboseListenPorts, 
+                    'verboseMotd': self.verboseMotd, 
+                    'listenPorts': self.listenPorts}
         
     
     # Verbosely display listen ports
@@ -110,6 +135,7 @@ class OSCListen:
         for portIdNum in listenPorts:
             print('Listening for OSC on port number: ', end = '')
             print(portIdNum)
+        print()
         return
             
     
@@ -172,10 +198,34 @@ class OSCListen:
             exec(eachMethod[ENUMERATE_VALUE_INDEX])
         return
     
-    def displayMOTD():
+    def displayMOTD(motd):
         # MOTD variables
         # Set this in config, and maybe on the fly with an argument
-        motd = "Ready...\n"
         print(motd)
+        print()
         return
+# ------------------------------------------------------------------------------------------------
+
+
+
+# --- OSC Shout Class ----------------------------------------------------------------------------
+class OSCShout():
+    """This class contains all methods and properties for running OSC Shout"""
+
+# ------------------------------------------------------------------------------------------------
+
+
+
+# --- OSC Whispers Class ----------------------------------------------------------------------------
+class OSCWhispers():
+    """This class contains all methods and properties for running OSC Whispers"""
+
+# ------------------------------------------------------------------------------------------------
+
+
+
+# --- OSC Presets Class ----------------------------------------------------------------------------
+class OSCPresets():
+    """This class contains all methods and properties for running OSC Presets"""
+
 # ------------------------------------------------------------------------------------------------

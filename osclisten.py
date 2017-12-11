@@ -55,8 +55,10 @@ if __name__ == '__main__':
     # Verbosely display listen ports if enabled
     if config.configData['verboseListenPorts'] or arguments.argData['verboseListenPorts'] == True:
         OSCListen.displayListenPorts(listenPorts)
-        # Display MOTD 
-        OSCListen.displayMOTD()
+
+    # Display MOTD 
+    if config.configData['verboseMotd'] or arguments.argData['verboseMotd']:
+        OSCListen.displayMOTD(config.configData['motd'])
     
     # Main Loop
     MAIN_LOOP_LATENCY = 1
