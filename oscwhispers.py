@@ -28,6 +28,12 @@ OSC Whispers
       along with this program. If not, see <http://www.gnu.org/licenses/>..
 '''
 
+'''
+    Very Important!
+        A massive rewrite is happening to this script.  While this script remains functional, there are
+        many portions of it that are not written well.  Soon these issues will be rectified.
+'''
+
 ## Import modules
 from argparse import ArgumentParser
 from liblo import Address, AddressError, send, Server, ServerError
