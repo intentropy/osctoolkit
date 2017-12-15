@@ -30,16 +30,18 @@ OSC Shout
 '''
 
 ## Import modules
-from osctoolkit import OSCShout
+#from osctoolkit import OSCShout
+from OSCToolkit.OSCShout import *
 
 if __name__ == "__main__":
     # Parse comand line arguments
-    arguments = OSCShout.ParseArgs()
+    arguments = ParseArgs()
 
     # Create an OSC Client and send a message based on command line arguments
-    OSCShout.sendOSC(
-            OSCShout.createOSCClient(
+    sendOSC(
+            createOSCClient(
                 arguments.argData['oscTargetIp'], 
                 arguments.argData['oscTargetPort']), 
             arguments.argData['oscTargetPath'], 
-            arguments.argData['oscArgList'])
+            arguments.argData['oscArgList'],
+            )
