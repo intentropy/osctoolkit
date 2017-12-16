@@ -1,7 +1,30 @@
 #!/usr/bin/env python
 '''
-    OSC Listen
-        This is the OSC Listen Module.  It conatins all functions and properties for OSC Listen.
+OSC Listen
+  osclisten.py
+    
+    Written by: Shane Hutter
+
+    Required Dependencies:  python >= 3.5, pyliblo
+
+      OSC Listen listens on any ports listed in the 
+      osctoolkit.conf configuration file, and prints any incoming
+      message (path and values) to the screen.
+
+      OSC Listen is a part of osctoolkit
+
+      osctoolkit is free software; you can redistribute it and/or modify
+      it under the terms of the GNU Lesser General Public License as published
+      by the Free Software Foundation, either version 3 of the License, or
+      (at your option) any later version.
+
+      osctoolkit is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+      GNU Lesser General Public License for more details.
+
+      You should have received a copy of the GNU Lesser General Public License
+      along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 # Import modules
