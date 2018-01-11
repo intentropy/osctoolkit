@@ -32,3 +32,150 @@ from liblo import Address, AddressError, send
 from mido import open_input, open_output, Parser
 from sys import exit
 from os.path import isfile
+
+
+#PROGRAM CONST
+ENUMERATE_ITERATE_INDEX = 0
+ENUMERATE_VALUE_INDEX = 1
+
+
+
+'''
+Config and Args:
+    * listen port
+    * command listen port
+    * osc target
+    * default virtual midi port [name, name, name]
+    * default midi device [device name, device name, etc...]
+    * Verbosity
+        * verbose virtual midi ports
+        * verbose midi devices
+        * verbose listen port
+        * verbose command port
+        * verbose osc target
+        * verbose midi data
+
+Args:
+    * list midi device names (mido)
+    * listen to midi device (device name)
+    * create virtual midi port [name, name, name]
+        * /oscmidi/name/(midi channel number)
+'''
+
+
+class ConfigFile:
+    """Load and parse OSC Toolkit configuration file for OSC Midi Client"""
+
+    ## Class variables for configuration file parsing
+    # Declare configuration file contants
+    CONFIG_PROPERTY_ARG_INDEX = 0
+    CONFIG_VALUE_ARG_INDEX = 1
+    CONFIG_PROTO_COMMENT_INDEX = 0 
+    CONFIG_COMMENT_SYMBOL = '#'
+    CONFIG_PROPERTY_PREFIX = 'oscmidi-client'
+
+    def __init__(self, configFileLocations):
+
+        ## Declare config arguments with default values defaults
+        # Verbosity settings
+        self.verboseVirtualMidiPorts = False
+        self.verboseMidiDevices = False
+        self.verboseListenPort = False
+        self.verboseCommandPort = False
+        self.verboseOscTarget = False
+        self.verboseMidiData = False
+
+        # OSC Port settings
+        self.oscServerListenPort = 9010
+        self.oscServerCommandPort = 9011
+
+        # Midi ports and devices
+        self.midiVirtualPorts = []
+        self.midiDevices = []
+
+        # Run initialization fucntions
+        self.configData = self.parseConfigFile(
+                self.loadConfigFile(
+                    configFileLocations
+                    ))
+
+    def loadConfigFile(self, configFileLocations):
+        ## Load config file
+        for checkConf in configFileLocations:
+            if isfile(checkConf):
+                configFileLocation = checkConf
+                break
+        configFile = open(configFileLocation, 'r')
+        configLines = configFile.read().split('\n')
+        configFile.close()
+        return configLines
+
+    def parseConfigFile(self, configLines):
+        # Parse config file lines
+        for lineRead in configLines:
+            if lineRead:
+                # Seperate the data in each line by whitespace
+                lineData = lineRead.split(self.CONFIG_COMMENT_SYMBOL)[self.CONFIG_PROTO_COMMENT_INDEX].split(' ')
+
+                # Verbosity settings
+                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_virtual_midi_ports':
+                    self.verboseVirtualMidiPorts = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                )
+                            )
+
+                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_midi_devices':
+                    self.verboseMidiDevices = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                )
+                            )
+
+                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_listen_port':
+                    self.verboseListenPort = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                )
+                            )
+
+                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_command_port':
+                    self.verboseCommandPort = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                )
+                            )
+
+                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_osc_target':
+                    self.verboseOscTarget = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                )
+                            )
+
+                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_midi_data':
+                    self.verboseMidiData = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                )
+                            )
+
+        return {
+                'verboseVirtualMidiPorts': self.verboseVirtualMidiPorts,
+                'verboseMidiDevices': self.verboseMidiDevices,
+                'verboseListenPort': self.verboseListenPort,
+                'verboseCommandPort': self.verboseCommandPort,
+                'verboseOscTarget': self.verboseOsctTarget,
+                'verboseMidiData': self.verboseMidiData,
+                'oscServerListenPort': self.oscServerListenPort,
+                'oscSeverCommandPort': self.oscServerCommandPort,
+                'midiVirtualPorts': self.midiVirtualPorts,
+                'midiDevices': self.midiDevices,
+                }
+
+
+
+#class ParseArgs:
+#    """Parse command line arguments for OSC Midi Client"""
+
+
