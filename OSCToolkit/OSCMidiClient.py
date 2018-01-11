@@ -72,8 +72,8 @@ class ConfigFile:
 
     ## Class variables for configuration file parsing
     # Declare configuration file contants
-    CONFIG_PROPERTY_ARG_INDEX = 0
-    CONFIG_VALUE_ARG_INDEX = 1
+    CONFIG_PROPERTY_INDEX = 0
+    CONFIG_VALUE_INDEX = 1
     CONFIG_PROTO_COMMENT_INDEX = 0 
     CONFIG_COMMENT_SYMBOL = '#'
     CONFIG_PROPERTY_PREFIX = 'oscmidi-client'
@@ -122,47 +122,93 @@ class ConfigFile:
                 lineData = lineRead.split(self.CONFIG_COMMENT_SYMBOL)[self.CONFIG_PROTO_COMMENT_INDEX].split(' ')
 
                 # Verbosity settings
-                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_virtual_midi_ports':
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_virtual_midi_ports':
                     self.verboseVirtualMidiPorts = bool(
                             int(
-                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                lineData[self.CONFIG_VALUE_INDEX]
                                 )
                             )
 
-                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_midi_devices':
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_midi_devices':
                     self.verboseMidiDevices = bool(
                             int(
-                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                lineData[self.CONFIG_VALUE_INDEX]
                                 )
                             )
 
-                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_listen_port':
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_listen_port':
                     self.verboseListenPort = bool(
                             int(
-                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                lineData[self.CONFIG_VALUE_INDEX]
                                 )
                             )
 
-                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_command_port':
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_command_port':
                     self.verboseCommandPort = bool(
                             int(
-                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                lineData[self.CONFIG_VALUE_INDEX]
                                 )
                             )
 
-                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_osc_target':
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_osc_target':
                     self.verboseOscTarget = bool(
                             int(
-                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                lineData[self.CONFIG_VALUE_INDEX]
                                 )
                             )
 
-                if lineData[self.CONFIG_PROPERTY_ARG_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_midi_data':
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.verbose_midi_data':
                     self.verboseMidiData = bool(
                             int(
-                                lineData[self.CONFIG_VALUE_ARG_INDEX]
+                                lineData[self.CONFIG_VALUE_INDEX]
                                 )
                             )
+
+                # OSC Settings
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.osc_server_listenPort':
+                    self.oscServerListenPort = int(
+                            lineData[
+                                self.CONFIG_VALUE_INDEX
+                                ]
+                            )
+
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.osc_server_command_port':
+                    self.oscServerCommandPort = int(
+                            lineData[
+                                self.CONFIG_VALUE_INDEX
+                                ]
+                            )
+
+
+
+
+                # MIDI Settings
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.midi_virtual_ports':
+                    for data in enumerate(lineData):
+                        if data[ENUMERATE_ITERATE_INDEX] > self.CONFIG_PROPERTY_INDEX:
+                            self.midiVirtualPorts.append(
+                                    data[
+                                        ENUMERATE_VALUE_INDEX
+                                        ]
+                                    )
+
+                if lineData[self.CONFIG_PROPERTY_INDEX] == self.CONFIG_PROPERTY_PREFIX + '.midi_devices':
+                    for data in enumerate(lineData):
+                        if data[ENUMERATE_ITERATE_INDEX] > self.CONFIG_PROPERTY_INDEX:
+                            self.midiDevices.append(
+                                    data[
+                                        ENUMERATE_VALUE_INDEX
+                                        ]
+                                    )
+
+
+                '''
+                ENUMERATE_ITERATE_INDEX = 0
+                ENUMERATE_VALUE_INDEX = 1
+                '''
+
+
+
 
         return {
                 'verboseVirtualMidiPorts': self.verboseVirtualMidiPorts,
