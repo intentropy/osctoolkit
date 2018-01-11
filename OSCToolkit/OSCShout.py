@@ -10,8 +10,8 @@ OSC Shout
       This python script, and all of OSC_Tools is licensed
       under the GNU GPL version 3
 
-      OSC Shout sends OSC Messages, as integers, floating point values, and
-      strings, via the command line.
+      The OSC Shout module contains all of the functions and classes required
+      to run OSC Shout
 
       OSC Shout is a part of osctoolkit
 

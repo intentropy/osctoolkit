@@ -6,10 +6,8 @@ OSC Listen
     Written by: Shane Hutter
 
     Required Dependencies:  python >= 3.5, pyliblo
-
-      OSC Listen listens on any ports listed in the 
-      osctoolkit.conf configuration file, and prints any incoming
-      message (path and values) to the screen.
+      
+      The OSC Listen module contains all of the functions and classes for OSC Listen
 
       OSC Listen is a part of osctoolkit
 

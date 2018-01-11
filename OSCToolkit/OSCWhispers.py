@@ -9,8 +9,8 @@ OSC Whispers
       This python script, and all of OSC_Tools is licensed
       under the GNU GPL version 3.
 
-      OSC Whispers recieves OSC Messages and forwards the message to a new
-      location(s) based on the messages Path Prefix.
+      The OSC Whispers module contains all of the functions and classes required
+      to run OSC Whispers
 
       OSC Whispers is a part of osctoolkit.
 
@@ -40,11 +40,10 @@ from os.path import isfile
 ToDo:
     * Verbosity is currently broken and needs to rebuilt in its function
     * Add a command and control OSC Server for issuing commands to oscwhipsers using OSC messages
-    * Add an OSC Client to send debug information out as a OSC Message
-        Message could be things like a "read to go" message, "shutting down" message,
+    * Add an OSC Client to send debug/logging information out as a OSC Message
+        Message could be things like a "ready to go" message, "shutting down" message,
         and maybe errors, etc...
     * Add logging
-    * Use a class for configuration file parsing
 '''
 
 
