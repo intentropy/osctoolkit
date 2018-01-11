@@ -60,6 +60,10 @@ Args:
     * listen to midi device (device name)
     * create virtual midi port [name, name, name]
         * /oscmidi/name/(midi channel number)
+    * Verbosity
+        * Quite mode
+        * Specific verbosity
+        * Specific quiet
 '''
 
 
@@ -165,7 +169,7 @@ class ConfigFile:
                 'verboseMidiDevices': self.verboseMidiDevices,
                 'verboseListenPort': self.verboseListenPort,
                 'verboseCommandPort': self.verboseCommandPort,
-                'verboseOscTarget': self.verboseOsctTarget,
+                'verboseOscTarget': self.verboseOscTarget,
                 'verboseMidiData': self.verboseMidiData,
                 'oscServerListenPort': self.oscServerListenPort,
                 'oscSeverCommandPort': self.oscServerCommandPort,

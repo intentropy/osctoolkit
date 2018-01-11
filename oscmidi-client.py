@@ -32,4 +32,15 @@ OSC Midi Client
 from OSCToolkit.OSCMidiClient import *
 
 if __name__ == "__main__":
-    pass
+
+    ## Load configuration file
+    CONFIG_FILE_LOCATIONS = ['osctoolkit.conf', 
+            '/home/$USER/.config/osctoolkit.conf', 
+            '/etc/osctoolkit.conf']
+    config = ConfigFile(CONFIG_FILE_LOCATIONS)
+
+    ## Debug print config and arg data
+    # Consider building funtions of this and others into a debug module
+    for data in config.configData:
+        print(data + " " + str(config.configData[data]))
+
