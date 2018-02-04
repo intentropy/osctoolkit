@@ -6,7 +6,7 @@ OSC Whispers
 
     Required Dependencies:  python >= 3.5, pyliblo
 
-      This python script, and all of OSC_Tools is licensed
+      This python script, and all of osctoolkit is licensed
       under the GNU GPL version 3.
 
       OSC Whispers recieves OSC Messages and forwards the message to a new

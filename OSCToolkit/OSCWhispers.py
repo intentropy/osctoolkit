@@ -6,7 +6,7 @@ OSC Whispers
 
     Required Dependencies:  python >= 3.5, pyliblo
 
-      This python script, and all of OSC_Tools is licensed
+      This python script, and all of osctoolkit is licensed
       under the GNU GPL version 3.
 
       The OSC Whispers module contains all of the functions and classes required
@@ -54,17 +54,27 @@ ENUMERATE_VALUE_INDEX = 1
 
 
 ## Load config file and parse arguments
-class ConfigFile():
-    """Load and parse OSC Toolkit configuration file for OSC Whispers"""
+class ConfigFile:
+    """ Load and parse OSC Toolkit configuration file for OSC Whispers. """
 
     ## Class variables for configuration file parsing
     # Declare configuration file contants
+    '''
+    make the constant CONFIG_PROPERTY_ARG
+    become CONFIG_PROPERY_INDEX
+    ALL list index constants must end in _INDEX
+    ARG in not needed
+
+    fix in all modules
+    '''
+    
     CONFIG_PROPERTY_ARG = 0
     CONFIG_VALUE_ARG = 1
     CONFIG_PROTO_COMMENT = 0 
     CONFIG_COMMENT_SYMBOL = '#' 
 
     def __init__(self, configFileLocations):
+        """ Initialization procedure for ConfigFile. """
 
         # Declare config arguments with default values defaults
         self.verboseListenPort = False
@@ -81,7 +91,10 @@ class ConfigFile():
                     ))
 
     def loadConfigFile(self, configFileLocations):
+        """ Load the configuration file. """
+
         ## Load config file
+        #  Rebuild and use 'with ... as ... '
         for checkConf in configFileLocations:
             if isfile(checkConf):
                 configFileLocation = checkConf
@@ -99,23 +112,41 @@ class ConfigFile():
                 lineData = lineRead.split(self.CONFIG_COMMENT_SYMBOL)[self.CONFIG_PROTO_COMMENT].split(' ')
                 # Verbosity settings
                 if lineData[self.CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_listen_port':
-                    self.verboseListenPort = bool(int(lineData[self.CONFIG_VALUE_ARG]))
+                    self.verboseListenPort = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG]
+                                )
+                            )
     
                 # add verbose command port for displaying oscwhipsers command and control port number
                 
                 if lineData[self.CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_incoming_osc':
-                    self.verboseIncomingOsc = bool(int(lineData[self.CONFIG_VALUE_ARG]))
+                    self.verboseIncomingOsc = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG]
+                                )
+                            )
                 
                 if lineData[self.CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_outgoing_osc':
-                    self.verboseOutgoingOsc = bool(int(lineData[self.CONFIG_VALUE_ARG]))
+                    self.verboseOutgoingOsc = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG]
+                                )
+                            )
                 
                 if lineData[self.CONFIG_PROPERTY_ARG] == 'oscwhispers.verbose_forwarding_rules':
-                    self.verboseForwardingRules = bool(int(lineData[self.CONFIG_VALUE_ARG]))
+                    self.verboseForwardingRules = bool(
+                            int(
+                                lineData[self.CONFIG_VALUE_ARG]
+                                )
+                            )
     
         
                 # OSC Settings
                 if lineData[self.CONFIG_PROPERTY_ARG] == 'oscwhispers.server_listen_port':
-                    self.serverListenPort = int(lineData[self.CONFIG_VALUE_ARG])
+                    self.serverListenPort = int(
+                            lineData[self.CONFIG_VALUE_ARG]
+                            )
         
         return {
                 'verboseListenPort': self.verboseListenPort,
@@ -128,7 +159,7 @@ class ConfigFile():
 
 
 
-class ParseArgs():
+class ParseArgs:
     """Parse command line arguments for OSC Whispers"""
     '''
         Argument Notes:
@@ -269,16 +300,16 @@ class ParseArgs():
             self.verboseForwardingRules = False
         
         return {
-                'verboseListenPort': self.verboseListenPort,
-                'verboseIncomingOsc': self.verboseIncomingOsc,
-                'verboseOutgoingOsc': self.verboseOutgoingOsc,
-                'verboseForwardingRules': self.verboseForwardingRules,
-                'otwFileLocations': self.otwFileLocations,
+                'verboseListenPort':        self.verboseListenPort,
+                'verboseIncomingOsc':       self.verboseIncomingOsc,
+                'verboseOutgoingOsc':       self.verboseOutgoingOsc,
+                'verboseForwardingRules':   self.verboseForwardingRules,
+                'otwFileLocations':         self.otwFileLocations,
                 }
 
 
 
-class OTWFiles():
+class OTWFiles:
     """
     This class takes a list of OTW File locations and parses the data into an
     OSC Client list and a forwarding ruleset.
@@ -287,6 +318,9 @@ class OTWFiles():
     # Declare OTWFiles() class variables
     OTW_PROTO_COMMENT = 0
     OTW_COMMENT_SYMBOL = '#'
+    OTW_PATH_SYMBOL = '/'
+    OTW_PORT_SYMBOL = ':'
+    OTW_NO_PATH_ALIAS_LENGTH = 1
     
     PATH_PREFIX_INDEX = 0
     TRUNCATE_INDICATOR_INDEX = 1
@@ -294,7 +328,16 @@ class OTWFiles():
 
     OSC_TARGETS_ID_INDEX = 0
     OSC_TARGETS_TARGET_INDEX = 1
+
+    # These indexes refer to data inside of oscTargets
+    OSC_TARGET_IP_INDEX = 0
+    OSC_TARGET_PORT_INDEX = 1
+    OSC_TARGET_ALIAS_INDEX = 2
     
+    # Used for splitting path aliases from ports
+    OSC_TARGET_PORT_SPLIT_PORT_INDEX = 0
+    OSC_TARGET_PORT_SPLIT_ALIAS_START_INDEX = 1
+
     
     
     def __init__(self, otwFiles):
@@ -306,8 +349,9 @@ class OTWFiles():
 
 
     def loadOtwFiles(self, otwFiles):
-        # Load the forwarding destinations from file
+        """ Load the forwarding destinations from file. """
         # OTW file constants
+        # rebuild using 'with ... as ...'
     
         # run for loop through all args.otw entries
         otwLines = []
@@ -317,11 +361,75 @@ class OTWFiles():
             otwLines += otwFile.read().split('\n')
             otwFile.close()
         return otwLines
+
     
+    
+    def buildOSCPath(self, pathElements = [] ):
+        """ Take a list of path elements (directory names) and return a string representing an OSC path """
+        oscPath = ''
+        for element in pathElements:
+            oscPath += '/' + element
+        return oscPath
+    
+
+
+    def oscTargetData(self, target = '' ):
+        """ Take an osc target 'IP:PORT(/ALIAS) and return a  list of osc target data for each target. """
+        # Used to parse target information
+        OTW_PATH_SYMBOL = '/'
+        OTW_PORT_SYMBOL = ':'
+        OTW_NO_PATH_ALIAS_LENGTH = 1
+
+        # Used for splitting path aliases from ports
+        OSC_TARGET_PORT_SPLIT_PORT_INDEX = 0
+        OSC_TARGET_PORT_SPLIT_ALIAS_START_INDEX = 1
+
+        # These indexes refer to data inside of oscTargets
+        OSC_TARGET_IP_INDEX = 0
+        OSC_TARGET_PORT_INDEX = 1
+        OSC_TARGET_ALIAS_INDEX = 2
+
+        # Get ip
+        ip = target.split(OTW_PORT_SYMBOL)[OSC_TARGET_IP_INDEX]
+        
+        # Determine if there is a path alias
+
+        if len(
+                target.split(
+                    OTW_PATH_SYMBOL
+                    )
+                ) == OTW_NO_PATH_ALIAS_LENGTH:
+                
+            # There is no path alias
+            port = target.split(OTW_PORT_SYMBOL)[OSC_TARGET_PORT_INDEX]
+            alias = None
+
+        else:
+            # There is a path alias
+            port = target.split(
+                    OTW_PORT_SYMBOL
+                    )[OSC_TARGET_PORT_INDEX].split(
+                            OTW_PATH_SYMBOL
+                            )[OSC_TARGET_PORT_SPLIT_PORT_INDEX]
+
+            alias = self.buildOSCPath(
+                    target.split(
+                        OTW_PORT_SYMBOL
+                        )[OSC_TARGET_PORT_INDEX].split(
+                            OTW_PATH_SYMBOL
+                            )[OSC_TARGET_PORT_SPLIT_ALIAS_START_INDEX:]
+                        )
+
+        return [
+            ip ,
+            port ,
+            alias ,
+            ]
+
     
     
     def parseOtwFiles(self, otwLines):
-        ## Parse OTW lines
+        """ Parse lines from OTW file into a forwarding ruleset. """
         '''
         OTW File Parsing
 
@@ -352,23 +460,32 @@ class OTWFiles():
         
         for lineRead in otwLines:
             if lineRead: 
-                # Seperate the data in each line by whitespace
+                # Seperate the data in each line by whitespace and ignore data post comment symbol
                 lineData = lineRead.split(self.OTW_COMMENT_SYMBOL)[self.OTW_PROTO_COMMENT].split()
                 if lineData:
 
-                   # Build a list of all targets regardless of redundency
-                    for dataIndex in range(self.TARGETS_START_INDEX, len(lineData)):
-                        allOscTargets.append(lineData[dataIndex].split(':'))
+                    # Iterate through the OSC tagets for the forwarding rule
+                    for dataIndex in range(
+                            self.TARGETS_START_INDEX , 
+                            len(lineData)
+                            ):
 
-                    # Store only unique targets in preIdOscTargets
-                    for target in allOscTargets:
-                        redundantTarget = False
-                        for storedTarget in preIdOscTargets:
-                            if target == storedTarget:
-                                redundantTarget = True
-                                break
-                        if redundantTarget == False:
-                            preIdOscTargets.append(target)
+                        # Debug print oscTargetData
+                        allOscTargets.append(
+                                self.oscTargetData(
+                                    lineData[dataIndex]
+                                    )
+                                )
+                            
+                        # Store only unique targets in preIdOscTargets
+                        for target in allOscTargets:
+                            redundantTarget = False
+                            for storedTarget in preIdOscTargets:
+                                if target == storedTarget:
+                                    redundantTarget = True
+                                    break
+                            if redundantTarget == False:
+                                preIdOscTargets.append(target)
 
         # Enumerate preIdOscTargets and append the value and iteration number to oscTargets
         for target in enumerate(preIdOscTargets):
@@ -404,17 +521,38 @@ class OTWFiles():
                         print('Error: OTW file ' + otwFileName  + ' contains incorrect truncation indicator')
                         exit(ERROR)
 
+                    
+                    
                     # Check all targets in OTW File agains oscTargets and store ID list
                     idList = []
 
-                    for dataIndex in range(self.TARGETS_START_INDEX, len(lineData)):
+                    '''
+                        When checking for the ID of the target Path alias must also be checked
+                    '''
+                    
+                    for dataIndex in range(
+                            self.TARGETS_START_INDEX , 
+                            len(lineData)
+                            ):
+
+
                         for target in oscTargets:
-                            if lineData[dataIndex].split(':') == target[self.OSC_TARGETS_TARGET_INDEX]:
-                                idList.append(target[self.OSC_TARGETS_ID_INDEX])
-                                break
+                            if self.oscTargetData(
+                                    lineData[dataIndex]
+                                    ) == target[self.OSC_TARGETS_TARGET_INDEX]:
+                                idList.append(
+                                        target[self.OSC_TARGETS_ID_INDEX] 
+                                        )
+
 
                     # Finally, build the forwarding rule list
-                    forwardingRules.append([forwardingPathPrefix, truncatePathPrefix, idList])
+                    forwardingRules.append(
+                            [
+                                forwardingPathPrefix, 
+                                truncatePathPrefix, 
+                                idList
+                                ]
+                            )
 
         return {
                 'forwardingRules': forwardingRules,
@@ -424,16 +562,23 @@ class OTWFiles():
 
 
 ### Create functions 
-class OSC():
+class OSC:
     """This class contains all functions for Open Sound Control operations"""
     
     # Declare OSC class constants and variables
     MAIN_LOOP_LATENCY = 1
+
     IP_INDEX = 0
     PORT_INDEX = 1
+    ALIAS_INDEX = 2
+
+    CLIENT_ID_INDEX = 0
+    TARGET_INDEX = 1
+
     PATH_PREFIX_INDEX = 0
-    TRUNCATE_INDICATOR_INDEX = 1
+    TRUNCATION_INDICATOR_INDEX = 1
     CLIENT_TARGET_LIST_INDEX = 2
+
     PATH_PREFIX_SPLIT_INDEX = 1
 
     
@@ -442,9 +587,19 @@ class OSC():
         # Declare instatiation variables
         self.forwardingRules = forwardingRules
 
+        # OSC target information (enumerate for client IDs)
+        self.oscTargets = []
+        for target in oscTargets:
+            self.oscTargets.append(
+                    target[
+                        self.TARGET_INDEX
+                        ]
+                    )
+
         ## Run initializtion functions
         # Setup the OSC server for incoming messages
         self.listenServer = self.setupOscServer(serverListenPort)
+
         # Setup the OSC clients
         self.oscClients = self.setupOscClients(oscTargets)
 
@@ -462,23 +617,54 @@ class OSC():
 
 
     def forwardMessage(self, path, args):
+        """ Forward the osc Message based on forwarding rules. """
         # This is a special function called as a liblo method (add_method) 
+
+        # Check message against the forwarding rules
         for rule in self.forwardingRules:
+            
+            # Check the path prefix against the forwarding rules
             if rule[self.PATH_PREFIX_INDEX] == self.pathPrefix(path):
-                if rule[self.TRUNCATE_INDICATOR_INDEX]:
+
+                
+                # Check if the matching rule has a truncation indicator
+                if rule[self.TRUNCATION_INDICATOR_INDEX]:
+                    # Truncaton indicator
+
                     for client in rule[self.CLIENT_TARGET_LIST_INDEX]:
-                        self.sendOSC(
-                                self.oscClients[client], 
-                                self.truncatePathPrefix(path), 
-                                args,
-                                )
+
+                        clientAlias = self.oscTargets[client][self.ALIAS_INDEX]
+                        if clientAlias:
+                            # Alias the path
+                            self.sendOSC(
+                                    self.oscClients[client], 
+                                    clientAlias, 
+                                    args,
+                                    )
+                        else:
+                            self.sendOSC(
+                                    self.oscClients[client], 
+                                    self.truncatePathPrefix(path), 
+                                    args,
+                                    )
+
                 else:
+
                     for client in rule[self.CLIENT_TARGET_LIST_INDEX]:
-                        self.sendOSC(
-                                self.oscClients[client], 
-                                path, 
-                                args,
-                                )
+                        clientAlias = self.oscTargets[client][self.ALIAS_INDEX]
+                        if clientAlias:
+                            # Alias the path
+                            self.sendOSC(
+                                    self.oscClients[client], 
+                                    clientAlias, 
+                                    args,
+                                    )
+                        else:
+                            self.sendOSC(
+                                    self.oscClients[client], 
+                                    path, 
+                                    args,
+                                    )
         return
 
 
@@ -509,9 +695,10 @@ class OSC():
             try:
                 oscClients.append(
                         Address(
-                            target[OTWFiles.OSC_TARGETS_TARGET_INDEX][self.IP_INDEX], 
-                            target[OTWFiles.OSC_TARGETS_TARGET_INDEX][self.PORT_INDEX],
-                            ))
+                            target[OTWFiles.OSC_TARGETS_TARGET_INDEX][self.IP_INDEX] , 
+                            target[OTWFiles.OSC_TARGETS_TARGET_INDEX][self.PORT_INDEX] ,
+                            )
+                        )
             except AddressError as error:
                 exit(error)
         return oscClients
@@ -536,6 +723,7 @@ class OSC():
 
 
 def verboseOutput():
+    # Needs to be repaired
 
     '''
     if verboseListenPort:
