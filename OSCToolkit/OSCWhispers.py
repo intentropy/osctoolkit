@@ -345,7 +345,9 @@ class OTWFiles:
         oscClients = []
 
         # Run initialization functions
-        self.otwFileData = self.parseOtwFiles(self.loadOtwFiles(otwFiles))
+        self.otwFileData = self.parseOtwFiles(
+                self.loadOtwFiles(otwFiles)
+                )
 
 
     def loadOtwFiles(self, otwFiles):
@@ -516,9 +518,12 @@ class OTWFiles:
                         #truncate prefix of path
                         truncatePathPrefix = True
                     else:
-                        # Throw better exceptions
-                        # raise
-                        print('Error: OTW file ' + otwFileName  + ' contains incorrect truncation indicator')
+                        # Raise better exceptions
+                        print(
+                                'Error: OTW file ' + 
+                                otwFileName  + 
+                                ' contains incorrect truncation indicator'
+                                )
                         exit(ERROR)
 
                     
@@ -607,9 +612,11 @@ class OSC:
     
     def sendOSC(self, target, path, args):
         #send osc messages in this function
-        libloSend='send(target, path'
+        libloSend = 'send(target, path'
         for eachArg in enumerate(args):
-            libloSend+=', args['+str(eachArg[ENUMERATE_ITERATE_INDEX])+']'
+            libloSend += ', args[' + str(
+                    eachArg[ENUMERATE_ITERATE_INDEX]
+                    )+']'
         libloSend+=')'
         exec(libloSend)
         return
@@ -709,7 +716,12 @@ class OSC:
         # Remove a paths top level
         STARTING_NON_PATH_PREFIX_INDEX = 2
         outPath = ''
-        for dirs in range(STARTING_NON_PATH_PREFIX_INDEX, len(inPath.split('/'))):
+        for dirs in range(
+                STARTING_NON_PATH_PREFIX_INDEX , 
+                len(
+                    inPath.split('/')
+                    )
+                ):
             outPath += '/' + inPath.split('/')[dirs]
         return outPath
 
@@ -736,17 +748,33 @@ def verboseOutput():
         print()
         for eachRule in forwardingRule:
             #make this output look nicer
-            print('Path with prefix /', end='')
-            print(eachList[OSC.PATH_INFO_LIST_INDEX][OSC.PATH_PREFIX_INDEX], end=' ')
-            if eachList[OSC.PATH_INFO_LIST_INDEX][self.TRUNCATE_INDICATOR_INDEX]==True:
+            print(
+                    'Path with prefix /' , 
+                    end=''
+                    )
+
+            print(
+                    eachList[OSC.PATH_INFO_LIST_INDEX][OSC.PATH_PREFIX_INDEX] , 
+                    end=' '
+                    )
+
+            if eachList[OSC.PATH_INFO_LIST_INDEX][self.TRUNCATE_INDICATOR_INDEX]:
                 print('will truncate path prefix.')
             else:
                 print('will not truncate path prefix.')
             print('Then it will forward to:')
             for target in eachList[OSC.CLIENT_TARGET_LIST_INDEX]:
-                print('IP: ', end='')
-                print(oscMessageTargets[target][OSC.IP_INDEX], end='    Port: ')
-                print(str(oscMessageTargets[target][OSC.PORT_INDEX]))
+                print(
+                        'IP: ' , 
+                        end=''
+                        )
+                print(
+                        oscMessageTargets[target][OSC.IP_INDEX] , 
+                        end='    Port: '
+                        )
+                print(
+                        str(
+                            oscMessageTargets[target][OSC.PORT_INDEX]
+                            )
+                        )
             print()
-
-
