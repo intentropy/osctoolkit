@@ -27,16 +27,12 @@ OSC Midi Client
 """
 
 # Import Modules
+from . import *
 from argparse import ArgumentParser
 from liblo import Address, AddressError, send
 from mido import open_input, open_output, Parser
 from sys import exit
 from os.path import isfile
-
-
-#PROGRAM CONST
-ENUMERATE_ITERATE_INDEX = 0
-ENUMERATE_VALUE_INDEX = 1
 
 
 

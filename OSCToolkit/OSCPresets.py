@@ -27,6 +27,7 @@ OSC Presets
 """
 
 # Import Modules
+from . import *
 from argparse import ArgumentParser
 from liblo import Address, AddressError, send
 from mido import open_input, open_output, Parser

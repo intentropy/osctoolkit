@@ -27,6 +27,7 @@ OSC Midi Server
 """
 
 # Import modules
+from . import *
 from argparse import ArgumentParser
 from liblo import Server, ServerError
 from mido import open_input, open_output, Parser

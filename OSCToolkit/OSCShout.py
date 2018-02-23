@@ -30,15 +30,12 @@ OSC Shout
 '''
 
 # Import modules
+from . import *
 from argparse import ArgumentParser
 from liblo import Address, AddressError, send
 from sys import exit
 from os.path import isfile
 
-
-# Global enumeration indicies constants
-ENUMERATE_ITERATE_INDEX = 0
-ENUMERATE_VALUE_INDEX = 1
 
 
 class ParseArgs():

@@ -26,15 +26,12 @@ OSC Listen
 '''
 
 # Import modules
+from . import *
 from argparse import ArgumentParser
 from liblo import Server, ServerError
 from sys import exit
 from os.path import isfile
 
-
-# Global enumeration indicies constants
-ENUMERATE_ITERATE_INDEX = 0
-ENUMERATE_VALUE_INDEX = 1
 
 # Declare class variables
 exitCall = False

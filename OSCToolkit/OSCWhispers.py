@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''
+"""
 OSC Whispers
     oscwhispers.py
       Written by: Shane Huter
@@ -26,9 +26,10 @@ OSC Whispers
 
       You should have received a copy of the GNU Lesser General Public License
       along with this program. If not, see <http://www.gnu.org/licenses/>..
-'''
+"""
 
 ## Import modules
+from . import *
 from argparse import ArgumentParser
 from liblo import Address, AddressError, send, Server, ServerError
 from sys import exit
@@ -44,13 +45,12 @@ ToDo:
         Message could be things like a "ready to go" message, "shutting down" message,
         and maybe errors, etc...
     * Add logging
+
+Major Change:
+    * Remove truncation indicator
+    * Rules must be specified with full path
+    * Aliasing makes path prefix and truncation indicator overly complicated
 '''
-
-
-#PROGRAM CONST
-ENUMERATE_ITERATE_INDEX = 0
-ENUMERATE_VALUE_INDEX = 1
-
 
 
 ## Load config file and parse arguments
