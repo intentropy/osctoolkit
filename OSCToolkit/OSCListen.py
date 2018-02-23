@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 '''
 OSC Listen
-  osclisten.py
+  OSCListen.py
     
     Written by: Shane Hutter
 
@@ -48,6 +48,7 @@ class ConfigFile():
         
     
     def __init__(self, configFileLocations):
+        """ Initialization steps for new object.  """
         # config variabless with default values
         self.verboseListenPorts = False
         self.verboseMotd = False
@@ -55,56 +56,92 @@ class ConfigFile():
         self.motd = ''
     
         # Run initialization functions
-        self.configData = self.parseConfigFile(self.loadConfigFile(configFileLocations))
+        self.configData = self.parseConfigFile(
+                self.loadConfigFile(configFileLocations)
+                )
         
     def loadConfigFile(self, configFileLocations):
-        ## Load Config File
+        """ Load the configuration file and return its contents in lines. """
+
+        ## Check for configuration file location
         for checkConf in configFileLocations:
             if isfile(checkConf):
                 configFileLocation = checkConf
                 break
-        configFile = open(configFileLocation, 'r')
-        configFileLines = configFile.read().split('\n')
-        configFile.close()
+
+        ## Load the configuration file and parse into lines
+        with open(
+                configFileLocation ,
+                'r'
+                ) as configFile:
+            configFileLines = configFile.read().split('\n')
+
         return configFileLines
-    
+   
+
+
     def parseConfigFile(self, configLines):
-    # Parse config file lines
+        """ Parse the configuration file and return a dictionary of values. """
+        # Parse config file lines
         for lineRead in configLines:
             if lineRead:
-                lineReadProtoComment = lineRead.split(self.CONFIG_COMMENT_SYMBOL)[self.CONFIG_PROTO_COMMENT].split(' ')
-                # Verbosity Settings
-                if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.verbose_listen_ports':
-                    self.verboseListenPorts = bool(int(lineReadProtoComment[self.CONFIG_VALUE_ARG]))
-                    
-                if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.verbose_motd':
-                    self.verboseMotd = bool(int(lineReadProtoComment[self.CONFIG_VALUE_ARG]))
 
+                # Seperatre lines by whitespace
+                lineReadProtoComment = lineRead.split(
+                        self.CONFIG_COMMENT_SYMBOL
+                        )[self.CONFIG_PROTO_COMMENT].split(' ')
+
+                ## Verbosity Settings
+                # Verbose listen ports
+                if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.verbose_listen_ports':
+                    self.verboseListenPorts = bool(
+                            int(
+                                lineReadProtoComment[self.CONFIG_VALUE_ARG]
+                                )
+                            )
+                    
+                # Verbose Message of the Day
+                if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.verbose_motd':
+                    self.verboseMotd = bool(
+                            int(
+                                lineReadProtoComment[self.CONFIG_VALUE_ARG]
+                                )
+                            )
+
+                ## Message of the Day
                 if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.motd':
-                    for configArg in range(self.CONFIG_VALUE_ARG, len(lineReadProtoComment)):
+                    for configArg in range(
+                            self.CONFIG_VALUE_ARG , 
+                            len(lineReadProtoComment)
+                            ):
                         self.motd += lineReadProtoComment[configArg] + ' '
             
-                # OSC Settings
+                ## OSC Settings
+                # Listen port
                 if lineReadProtoComment[self.CONFIG_PROPERTY_ARG] == 'osclisten.listen_port':
-                    self.listenPorts.append(int(lineReadProtoComment[self.CONFIG_VALUE_ARG]))
+                    self.listenPorts.append(
+                            int(
+                                lineReadProtoComment[self.CONFIG_VALUE_ARG]
+                                )
+                            )
 
-        return {'verboseListenPorts': self.verboseListenPorts, 
-                'listenPorts': self.listenPorts, 
-                'verboseMotd': self.verboseMotd, 
-                'motd': self.motd}
+        return {
+                'verboseListenPorts':   self.verboseListenPorts , 
+                'listenPorts':          self.listenPorts ,
+                'verboseMotd':          self.verboseMotd , 
+                'motd':                 self.motd ,
+                }
+
 
 
 class ParseArgs():
-    """Parse command line arguments for OSC Listen"""
+    """ Parse command line arguments for OSC Listen. """
 
-    def __init__(self):
+    def __init__(self, configData):
+        """ Initilization process for newly instantiated classes. """
         # argument vars with default values
-        '''
-            These should be overwritting the config file, and needs to be fixed.
-            Load the default values from the config file dictionary.
-        '''
-        self.verboseListenPorts = False
-        self.verboseMotd = False
+        self.verboseListenPorts = configData['verboseListenPorts']
+        self.verboseMotd = configData['verboseMotd']
         self.listenPorts = []
 
         # run initilization methods

@@ -44,7 +44,7 @@ if __name__ == '__main__':
     config = ConfigFile(CONFIG_FILE_LOCATIONS)
 
     # Parse Arguments
-    arguments = ParseArgs()
+    arguments = ParseArgs(config.configData)
     
     # Setup, Build, and register each OSC server on each listen port from config and args
     listenPorts = config.configData['listenPorts'] + arguments.argData['listenPorts']
