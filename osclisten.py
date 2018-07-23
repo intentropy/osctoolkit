@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-'''
+#!/usr/bin/python3
+"""
 OSC Listen
   osclisten.py
     
@@ -25,42 +25,44 @@ OSC Listen
 
       You should have received a copy of the GNU Lesser General Public License
       along with this program. If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 
-from OSCToolkit.OSCListen import *
+from OSCToolkit.OSCListen   import *
+
+
+
+MAIN_LOOP_LATENCY = 1
+
+
 
 if __name__ == '__main__':
-
-    # Load Config file
-    '''
-        osclisten.ConfigFile takes the potential locations of the configuration file in order in which
-        to check for the file.  Once a file is found it is loaded (osclisten.ConfigFile.loadConfigFile),
-        and broken into lines.  The lines are passed to osclisten.ConfigFile.parseConfigFile, and
-        the values are stored in a dictionary called configData.
-    '''
-    CONFIG_FILE_LOCATIONS = ['osctoolkit.conf', 
-            '/home/$USER/.config/osctoolkit.conf', 
-            '/etc/osctoolkit.conf']
-    config = ConfigFile(CONFIG_FILE_LOCATIONS)
+    # Load Configuration File
+    CONFIG_FILE_LOCATIONS = [
+            'osctoolkit.conf'                       , 
+            '/home/$USER/.config/osctoolkit.conf'   , 
+            '/etc/osctoolkit.conf'                  ,
+            ]
+    config = ConfigFile( CONFIG_FILE_LOCATIONS )
 
     # Parse Arguments
-    arguments = ParseArgs(config.configData)
+    arguments = ParseArgs( config.configData )
     
     # Setup, Build, and register each OSC server on each listen port from config and args
-    listenPorts = config.configData['listenPorts'] + arguments.argData['listenPorts']
-    setupOSCServers(listenPorts)
-    buildOSCServers(listenPorts)
+    listenPorts = config.configData[ 'listenPorts' ] + arguments.argData[ 'listenPorts' ]
+    setupOSCServers( listenPorts )
+    buildOSCServers( listenPorts )
 
     # Verbosely display listen ports if enabled
-    if config.configData['verboseListenPorts'] or arguments.argData['verboseListenPorts'] == True:
-        displayListenPorts(listenPorts)
+    if config.configData[ 'verboseListenPorts' ] or arguments.argData[ 'verboseListenPorts' ] == True:
+        displayListenPorts( listenPorts )
 
     # Display MOTD 
-    if config.configData['verboseMotd'] or arguments.argData['verboseMotd']:
-        displayMOTD(config.configData['motd'])
+    if config.configData[ 'verboseMotd' ] or arguments.argData[ 'verboseMotd' ]:
+        displayMOTD(
+                config.configData[ 'motd' ]
+                )
     
     # Main Loop
-    MAIN_LOOP_LATENCY = 1
     while exitCall == False:
         for oscServerId in oscListenServers:
-            oscServerId.recv(MAIN_LOOP_LATENCY)
+            oscServerId.recv( MAIN_LOOP_LATENCY )

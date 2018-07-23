@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """
 OSC Midi Server
     OSCMidiServer.py
@@ -27,9 +27,9 @@ OSC Midi Server
 """
 
 # Import modules
-from . import *
-from argparse import ArgumentParser
-from liblo import Server, ServerError
-from mido import open_input, open_output, Parser
-from sys import exit
-from os.path import isfile
+from .          import *
+from argparse   import ArgumentParser
+from liblo      import Server, ServerError
+from mido       import open_input, open_output, Parser
+from sys        import exit
+from os.path    import isfile

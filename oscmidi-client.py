@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 """
 OSC Midi Client
     oscmidi-client.py
@@ -29,18 +29,23 @@ OSC Midi Client
       along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
-from OSCToolkit.OSCMidiClient import *
+from OSCToolkit.OSCMidiClient   import *
 
 if __name__ == "__main__":
 
     ## Load configuration file
-    CONFIG_FILE_LOCATIONS = ['osctoolkit.conf', 
-            '/home/$USER/.config/osctoolkit.conf', 
-            '/etc/osctoolkit.conf']
-    config = ConfigFile(CONFIG_FILE_LOCATIONS)
+    CONFIG_FILE_LOCATIONS = [
+            'osctoolkit.conf'                       , 
+            '/home/$USER/.config/osctoolkit.conf'   , 
+            '/etc/osctoolkit.conf'                  ,
+            ]
+    config = ConfigFile( CONFIG_FILE_LOCATIONS )
 
     ## Debug print config and arg data
     # Consider building funtions of this and others into a debug module
     for data in config.configData:
-        print(data + " " + str(config.configData[data]))
-
+        print(
+                data + " " + str(
+                    config.configData[ data ]
+                    )
+                )

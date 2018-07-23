@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-'''
+#!/usr/bin/python3
+"""
 OSC Shout
   oscshout.py
 
@@ -27,14 +27,14 @@ OSC Shout
 
       You should have received a copy of the GNU Lesser General Public License
       along with this program. If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 
 # Import modules
-from . import *
-from argparse import ArgumentParser
-from liblo import Address, AddressError, send
-from sys import exit
-from os.path import isfile
+from .          import *
+from argparse   import ArgumentParser
+from liblo      import Address, AddressError, send
+from sys        import exit
+from os.path    import isfile
 
 
 
@@ -42,27 +42,27 @@ class ParseArgs():
     """Parse command line arguments"""
 
 
-    def __init__(self):
+    def __init__( self ):
 
         # Argument parsing variables
-        self.oscPathElements = []
-        self.oscTargetPath = ''
-        self.targetIp = ''
-        self.targetPort = ''
-        self.oscArgList = []
+        self.oscPathElements    = []
+        self.oscTargetPath      = ''
+        self.targetIp           = ''
+        self.targetPort         = ''
+        self.oscArgList         = []
 
         # Run intitialization methods
         self.argData = self.parse()
 
-    def parse(self):
+    def parse( self ):
         # Argument parsing constant
-        TARGET_ARG_INDEX = 0
-        IP_PORT_PATH_ARG_INDEX = 1
-        IP_PORT_PATH_INDEX = 0
-        IP_INDEX = 0
-        PORT_PATH_INDEX = 1
-        PORT_INDEX = 0
-        TOP_LEVEL_PATH_INDEX = 1
+        TARGET_ARG_INDEX        = 0
+        IP_PORT_PATH_ARG_INDEX  = 1
+        IP_PORT_PATH_INDEX      = 0
+        IP_INDEX                = 0
+        PORT_PATH_INDEX         = 1
+        PORT_INDEX              = 0
+        TOP_LEVEL_PATH_INDEX    = 1
 
         ## Parse Arguments
         parser = ArgumentParser()
@@ -78,34 +78,40 @@ class ParseArgs():
         '''
         # OSC Target (IP:PORT/PATH)
         parser.add_argument(
-                "target", 
-                nargs = 1, 
-                help = "IP:PORT/Path/to/message",
+                "target"                            , 
+                nargs   = 1                         , 
+                help    = "IP:PORT/Path/to/message" ,
                 )
             
         # OSC messages
         parser.add_argument(
-                "message", 
-                nargs = "+", 
-                help = "Strings, integers, and floating point values to be sent in the OSC message.",
+                "message"                                                                                   , 
+                nargs       = "+"                                                                           , 
+                help        = "Strings, integers, and floating point values to be sent in the OSC message." ,
                 )
         
         args = parser.parse_args()
 
         ## Gather ip, port, and path from args.target
-        oscIpPortPath = args.target[TARGET_ARG_INDEX]
+        oscIpPortPath = args.target[ TARGET_ARG_INDEX ]
 
         # Store target IP address
-        self.oscTargetIp = oscIpPortPath.split(':')[IP_INDEX]
+        self.oscTargetIp = oscIpPortPath.split( ':' )[ IP_INDEX ]
 
         # Store target port number
-        self.oscTargetPort = int(oscIpPortPath.split(':')[PORT_PATH_INDEX].split('/')[PORT_INDEX])
+        self.oscTargetPort = int(
+                oscIpPortPath.split( ':' )[ PORT_PATH_INDEX ].split( '/' )[ PORT_INDEX ]
+                )
 
         # Store OSC message path
         oscPathElements = []
-        for pathElement in enumerate(oscIpPortPath.split(':')[PORT_PATH_INDEX].split('/')):
-            if pathElement[ENUMERATE_ITERATE_INDEX] >= TOP_LEVEL_PATH_INDEX:
-                oscPathElements.append(pathElement[ENUMERATE_VALUE_INDEX])
+        for pathElement in enumerate(
+                oscIpPortPath.split( ':' )[ PORT_PATH_INDEX ].split( '/' )
+                ):
+            if pathElement[ ENUMERATE_ITERATE_INDEX ] >= TOP_LEVEL_PATH_INDEX:
+                oscPathElements.append(
+                        pathElement[ ENUMERATE_VALUE_INDEX ]
+                        )
         for pathElement in oscPathElements:    
             self.oscTargetPath += '/' + pathElement
 
@@ -114,23 +120,33 @@ class ParseArgs():
             # If the message is surrounded by " or ' then do not convert from a string
             try:
                 # Conver to an integer
-                self.oscArgList.append(int(oscArg))
+                self.oscArgList.append(
+                        int( oscArg )
+                        )
             except:
                 try:
                     # Convert to a floating point value
-                    self.oscArgList.append(float(oscArg))
+                    self.oscArgList.append(
+                            float( oscArg )
+                            )
                 except:
                     # Keep as a string
-                    self.oscArgList.append(str(oscArg))
+                    self.oscArgList.append(
+                            str( oscArg )
+                            )
         return {
-                'oscTargetIp': self.oscTargetIp,
-                'oscTargetPort': self.oscTargetPort,
-                'oscTargetPath': self.oscTargetPath,
-                'oscArgList': self.oscArgList,
+                'oscTargetIp'   : self.oscTargetIp      ,
+                'oscTargetPort' : self.oscTargetPort    ,
+                'oscTargetPath' : self.oscTargetPath    ,
+                'oscArgList'    : self.oscArgList       ,
                 }
 
 
-def sendOSC(target, path, messages):
+def sendOSC(
+        target      , 
+        path        , 
+        messages    ,
+        ):
     ## Sends OSC Message
     # Create a string for a liblo.send() command
     libloSend = 'send(target, path'
@@ -141,16 +157,24 @@ def sendOSC(target, path, messages):
         string, one by one, as the messages list itself, enumerating through each of the 
         indicies in messages.
     '''
-    for eachMessage in enumerate(messages):
-        libloSend += ', messages[' + str(eachMessage[ENUMERATE_ITERATE_INDEX]) + ']'
+    for eachMessage in enumerate( messages ):
+        libloSend += ', messages[' + str(
+                eachMessage[ ENUMERATE_ITERATE_INDEX ]
+                ) + ']'
     libloSend += ')'
-    exec(libloSend)
+    exec( libloSend )
     return
 
 
-def createOSCClient(oscTargetIp, oscTargetPort):
+def createOSCClient(
+        oscTargetIp     , 
+        oscTargetPort   ,
+        ):
     # Create OSC Client
     try:
-        return Address(oscTargetIp, oscTargetPort)
+        return Address(
+                oscTargetIp     , 
+                oscTargetPort   ,
+                )
     except AddressError as error:
-        exit(error)
+        exit( error )

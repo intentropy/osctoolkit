@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-'''
+#!/usr/bin/python3
+"""
 OSC Whispers
     oscwhispers.py
       Written by: Shane Huter
@@ -26,9 +26,9 @@ OSC Whispers
 
       You should have received a copy of the GNU Lesser General Public License
       along with this program. If not, see <http://www.gnu.org/licenses/>..
-'''
+"""
 
-from OSCToolkit.OSCWhispers import *
+from OSCToolkit.OSCWhispers     import *
 
 
 # Main Loop
@@ -36,14 +36,14 @@ if __name__ == "__main__":
 
     # Load and parse configuration file
     CONFIG_FILE_LOCATIONS = [
-            'osctoolkit.conf', 
-            '/home/$USER/.config/osctoolkit.conf', 
-            '/etc/osctoolkit.conf',
+            'osctoolkit.conf'                       , 
+            '/home/$USER/.config/osctoolkit.conf'   , 
+            '/etc/osctoolkit.conf'                  ,
             ]
-    config = ConfigFile(CONFIG_FILE_LOCATIONS)
+    config = ConfigFile( CONFIG_FILE_LOCATIONS )
 
     # Parse command lie arguments
-    arguments = ParseArgs(config.configData)
+    arguments = ParseArgs( config.configData )
 
     # Load and parse OTW Files
     '''
@@ -53,14 +53,15 @@ if __name__ == "__main__":
     otwFiles = OTWFiles(
             arguments.argData[
                 'otwFileLocations'
-                ])
+                ]   ,
+            )
 
     osc = OSC(
-            config.configData['serverListenPort'],
-            otwFiles.otwFileData['forwardingRules'],
-            otwFiles.otwFileData['oscTargets'],
+            config.configData[ 'serverListenPort' ]     ,
+            otwFiles.otwFileData[ 'forwardingRules' ]   ,
+            otwFiles.otwFileData[ 'oscTargets' ]        ,
             )
 
     ## Main Loop
     while True:
-        osc.listenServer.recv(osc.MAIN_LOOP_LATENCY)
+        osc.listenServer.recv( osc.MAIN_LOOP_LATENCY )

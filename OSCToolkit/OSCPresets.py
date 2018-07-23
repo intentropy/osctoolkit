@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """
 OSC Presets
     OSCPresets.py
@@ -27,9 +27,9 @@ OSC Presets
 """
 
 # Import Modules
-from . import *
-from argparse import ArgumentParser
-from liblo import Address, AddressError, send
-from mido import open_input, open_output, Parser
-from sys import exit
-from os.path import isfile
+from .          import *
+from argparse   import ArgumentParser
+from liblo      import Address, AddressError, send
+from mido       import open_input, open_output, Parser
+from sys        import exit
+from os.path    import isfile
