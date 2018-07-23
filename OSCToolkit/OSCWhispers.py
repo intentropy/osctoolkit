@@ -49,7 +49,7 @@ ToDo:
 Major Change:
     * Remove truncation indicator
     * Rules must be specified with full path
-    * Aliasing makes path prefix and truncation indicator overly complicated
+    * Path replacement makes path prefix and truncation indicator overly complicated
 '''
 
 
@@ -320,7 +320,7 @@ class OTWFiles:
     OTW_COMMENT_SYMBOL = '#'
     OTW_PATH_SYMBOL = '/'
     OTW_PORT_SYMBOL = ':'
-    OTW_NO_PATH_ALIAS_LENGTH = 1
+    OTW_NO_PATH_REPLACEMENT_LENGTH = 1
     
     PATH_PREFIX_INDEX = 0
     TRUNCATE_INDICATOR_INDEX = 1
@@ -332,11 +332,11 @@ class OTWFiles:
     # These indexes refer to data inside of oscTargets
     OSC_TARGET_IP_INDEX = 0
     OSC_TARGET_PORT_INDEX = 1
-    OSC_TARGET_ALIAS_INDEX = 2
+    OSC_TARGET_PATH_REPLACEMENT_INDEX = 2
     
     # Used for splitting path aliases from ports
     OSC_TARGET_PORT_SPLIT_PORT_INDEX = 0
-    OSC_TARGET_PORT_SPLIT_ALIAS_START_INDEX = 1
+    OSC_TARGET_PORT_SPLIT_PATH_REPLACEMENT_START_INDEX = 1
 
     
     
@@ -376,20 +376,20 @@ class OTWFiles:
 
 
     def oscTargetData(self, target = '' ):
-        """ Take an osc target 'IP:PORT(/ALIAS) and return a  list of osc target data for each target. """
+        """ Take an osc target 'IP:PORT(/Path/Replacement) and return a  list of osc target data for each target. """
         # Used to parse target information
         OTW_PATH_SYMBOL = '/'
         OTW_PORT_SYMBOL = ':'
-        OTW_NO_PATH_ALIAS_LENGTH = 1
+        OTW_NO_PATH_REPLACEMENT_LENGTH = 1
 
         # Used for splitting path aliases from ports
         OSC_TARGET_PORT_SPLIT_PORT_INDEX = 0
-        OSC_TARGET_PORT_SPLIT_ALIAS_START_INDEX = 1
+        OSC_TARGET_PORT_SPLIT_PATH_REPLACEMENT_START_INDEX = 1
 
         # These indexes refer to data inside of oscTargets
         OSC_TARGET_IP_INDEX = 0
         OSC_TARGET_PORT_INDEX = 1
-        OSC_TARGET_ALIAS_INDEX = 2
+        OSC_TARGET_PATH_REPLACEMENT_INDEX = 2
 
         # Get ip
         ip = target.split(OTW_PORT_SYMBOL)[OSC_TARGET_IP_INDEX]
@@ -400,7 +400,7 @@ class OTWFiles:
                 target.split(
                     OTW_PATH_SYMBOL
                     )
-                ) == OTW_NO_PATH_ALIAS_LENGTH:
+                ) == OTW_NO_PATH_REPLACEMENT_LENGTH:
                 
             # There is no path alias
             port = target.split(OTW_PORT_SYMBOL)[OSC_TARGET_PORT_INDEX]
@@ -419,7 +419,7 @@ class OTWFiles:
                         OTW_PORT_SYMBOL
                         )[OSC_TARGET_PORT_INDEX].split(
                             OTW_PATH_SYMBOL
-                            )[OSC_TARGET_PORT_SPLIT_ALIAS_START_INDEX:]
+                            )[OSC_TARGET_PORT_SPLIT_PATH_REPLACEMENT_START_INDEX:]
                         )
 
         return [
@@ -575,7 +575,7 @@ class OSC:
 
     IP_INDEX = 0
     PORT_INDEX = 1
-    ALIAS_INDEX = 2
+    PATH_REPLACEMENT_INDEX = 2
 
     CLIENT_ID_INDEX = 0
     TARGET_INDEX = 1
@@ -640,12 +640,12 @@ class OSC:
 
                     for client in rule[self.CLIENT_TARGET_LIST_INDEX]:
 
-                        clientAlias = self.oscTargets[client][self.ALIAS_INDEX]
-                        if clientAlias:
-                            # Alias the path
+                        clientPathReplacement = self.oscTargets[client][self.PATH_REPLACEMENT_INDEX]
+                        if clientPathReplacement:
+                            # Replace the path
                             self.sendOSC(
                                     self.oscClients[client], 
-                                    clientAlias, 
+                                    clientPathReplacement, 
                                     args,
                                     )
                         else:
@@ -658,12 +658,12 @@ class OSC:
                 else:
 
                     for client in rule[self.CLIENT_TARGET_LIST_INDEX]:
-                        clientAlias = self.oscTargets[client][self.ALIAS_INDEX]
-                        if clientAlias:
-                            # Alias the path
+                        clientPathReplacement = self.oscTargets[client][self.PATH_REPLACEMENT_INDEX]
+                        if clientPathReplacement:
+                            # Replace the path
                             self.sendOSC(
                                     self.oscClients[client], 
-                                    clientAlias, 
+                                    clientPathReplacement, 
                                     args,
                                     )
                         else:
