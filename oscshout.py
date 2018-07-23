@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''
+"""
 OSC Shout
   oscshout.py
 
@@ -27,11 +27,10 @@ OSC Shout
 
       You should have received a copy of the GNU Lesser General Public License
       along with this program. If not, see <http://www.gnu.org/licenses/>.
-'''
+"""
 
 ## Import modules
-#from osctoolkit import OSCShout
-from OSCToolkit.OSCShout import *
+from OSCToolkit.OSCShout    import *
 
 if __name__ == "__main__":
     # Parse comand line arguments
@@ -40,8 +39,9 @@ if __name__ == "__main__":
     # Create an OSC Client and send a message based on command line arguments
     sendOSC(
             createOSCClient(
-                arguments.argData['oscTargetIp'], 
-                arguments.argData['oscTargetPort']), 
-            arguments.argData['oscTargetPath'], 
-            arguments.argData['oscArgList'],
+                arguments.argData[ 'oscTargetIp' ]  , 
+                arguments.argData['oscTargetPort']  ,
+                )   , 
+            arguments.argData[ 'oscTargetPath' ]    , 
+            arguments.argData[ 'oscArgList' ]       ,
             )
