@@ -34,22 +34,14 @@ from argparse   import ArgumentParser
 from liblo      import Address, AddressError, send, Server, ServerError
 from sys        import exit
 from os.path    import isfile
+from os         import getpid
 
 
 
 '''
 ToDo:
-    * Verbosity is currently broken and needs to rebuilt in its function
     * Add a command and control OSC Server for issuing commands to oscwhipsers using OSC messages
-    * Add an OSC Client to send debug/logging information out as a OSC Message
-        Message could be things like a "ready to go" message, "shutting down" message,
-        and maybe errors, etc...
     * Add logging
-
-Major Change:
-    * Remove truncation indicator
-    * Rules must be specified with full path
-    * Path replacement makes path prefix and truncation indicator overly complicated
 '''
 
 
@@ -59,15 +51,6 @@ class ConfigFile:
 
     ## Class variables for configuration file parsing
     # Declare configuration file contants
-    '''
-    make the constant CONFIG_PROPERTY_ARG
-    become CONFIG_PROPERY_INDEX
-    ALL list index constants must end in _INDEX
-    ARG in not needed
-
-    fix in all modules
-    '''
-    
     CONFIG_PROPERTY_ARG     = 0
     CONFIG_VALUE_ARG        = 1
     CONFIG_PROTO_COMMENT    = 0 
@@ -80,12 +63,8 @@ class ConfigFile:
         """ Initialization procedure for ConfigFile. """
 
         # Declare config arguments with default values defaults
-        self.verboseListenPort      = False
-        self.verboseIncomingOsc     = False
-        self.verboseOutgoingOsc     = False
-        self.verboseForwardingRules = False
-        self.verboseCommandPort     = False
         self.serverListenPort       = 9000
+        self.daemonFiles            = []
 
         # Run initialization fucntions
         self.configData = self.parseConfigFile(
@@ -118,51 +97,23 @@ class ConfigFile:
             if lineRead:
                 # Seperate the data in each line by whitespace
                 lineData = lineRead.split( self.CONFIG_COMMENT_SYMBOL )[ self.CONFIG_PROTO_COMMENT ].split( ' ' )
-                # Verbosity settings
-                if lineData[ self.CONFIG_PROPERTY_ARG ] == 'oscwhispers.verbose_listen_port':
-                    self.verboseListenPort = bool(
-                            int(
-                                lineData[ self.CONFIG_VALUE_ARG ]
-                                )
-                            )
-    
-                # add verbose command port for displaying oscwhipsers command and control port number
                 
-                if lineData[ self.CONFIG_PROPERTY_ARG ] == 'oscwhispers.verbose_incoming_osc':
-                    self.verboseIncomingOsc = bool(
-                            int(
-                                lineData[ self.CONFIG_VALUE_ARG ]
-                                )
-                            )
-                
-                if lineData[ self.CONFIG_PROPERTY_ARG ] == 'oscwhispers.verbose_outgoing_osc':
-                    self.verboseOutgoingOsc = bool(
-                            int(
-                                lineData[ self.CONFIG_VALUE_ARG ]
-                                )
-                            )
-                
-                if lineData[ self.CONFIG_PROPERTY_ARG ] == 'oscwhispers.verbose_forwarding_rules':
-                    self.verboseForwardingRules = bool(
-                            int(
-                                lineData[ self.CONFIG_VALUE_ARG ]
-                                )
-                            )
-    
-        
                 # OSC Settings
                 if lineData[ self.CONFIG_PROPERTY_ARG ] == 'oscwhispers.server_listen_port':
                     self.serverListenPort = int(
                             lineData[ self.CONFIG_VALUE_ARG ]
                             )
+
+                # Daemon OTW files
+                if lineData[ self.CONFIG_PROPERTY_ARG ] == 'oscwhispers.daemon_file':
+                    self.daemonFiles.append(
+                            lineData[ self.CONFIG_VALUE_ARG ]
+                            )
+
         
         return {
-                'verboseListenPort'         : self.verboseListenPort        ,
-                'verboseIncomingOsc'        : self.verboseIncomingOsc       ,
-                'verboseOutgoingOsc'        : self.verboseOutgoingOsc       ,
-                'verboseForwardingRules'    : self.verboseForwardingRules   ,
-                'verboseCommandPort'        : self.verboseCommandPort       ,
                 'serverListenPort'          : self.serverListenPort         ,
+                'daemonFiles'               : self.daemonFiles              ,
                 }
 
 
@@ -179,30 +130,6 @@ class ParseArgs:
                 -d or --daemonize
                     specified files are loaded from configuration file.  This allows script to be
                     enabled as a service.  Daemonize is mutually exclusive from files.
-            
-            Verbose:
-            There are several types of verbosity that can be turned on:
-
-            -v is global verbosity, this switchy will turn on all verbosity, regardless
-                of configuration
-
-            -V is specific verbosity, and can have any of the following arguments
-                "in" is verbose incoming osc message
-                "out" is verbose outgoing osc message
-                "listen" is verbose listen port number
-                "command" is verbose command and control port number
-                "forward" is verbose forwarding list
-                These can be used in combination
-                    i.e. -V in out is both verbose incoming and outgoing osc messages
-
-            -v and -V are mutually
-
-            -q is globally quite, it will ignore all configuration verbosity options and run
-                OSC Whispers in quite mode
-
-            -Q specific quite may be a good option to disable verbosity options that are set up 
-                in the configuration file, however it will remain mutually exclusive from specific 
-                verbosity
     '''
     
     def __init__(
@@ -210,12 +137,14 @@ class ParseArgs:
             configData  ,
             ):
         # Declare argument variables with default values
-        self.verboseIncomingOsc     = configData[ 'verboseIncomingOsc' ]
-        self.verboseOutgoingOsc     = configData[ 'verboseOutgoingOsc' ]
-        self.verboseListenPort      = configData[ 'verboseListenPort' ]
-        self.verboseCommandPort     = configData[ 'verboseCommandPort' ]
-        self.verboseForwardingRules = configData[ 'verboseForwardingRules' ]
+        self.daemonFiles            = configData[ 'daemonFiles' ]
         self.otwFileLocations       = []
+
+        self.pidDir = "/tmp"
+        self.pid    = str(
+                getpid()
+                )
+
         
         # Run initilization functions
         self.argData = self.parse()
@@ -229,52 +158,25 @@ class ParseArgs:
          ## Add arguments
         
         # OTW File(s)
-        # optionally specify multiple otw files and have all the forwarding definitions loaded
-        parser.add_argument(
+        otwFileGroup = parser.add_mutually_exclusive_group( required = True )
+
+        otwFileGroup.add_argument(
                 '-f'                                                                , 
                 '--file'                                                            , 
                 dest    = 'otw'                                                     , 
                 nargs   = '+'                                                       , 
                 help    = 'Specifies OTW files to be loaded into OSC Whispers.'     ,
                 )
-    
-        # Verbosity Arguments
-        verbosityGroup = parser.add_mutually_exclusive_group()
-    
-    
-        # Global verbosity
-        verbosityGroup.add_argument(
-                '-v'                                                , 
-                '--verbose'                                         , 
-                dest        = 'verbose'                             , 
-                action      = 'store_true'                          , 
-                help        = 'Verbosely output all information'    ,
+
+        # Daemon Mode, load files from config file, create pid file in tmp
+        otwFileGroup.add_argument(
+                '-d'                                    ,
+                '--daemon'                              ,
+                dest        = 'daemon'                  ,
+                action      = 'store_true'              ,
+                help        = 'Start in daemon mode.'   ,
                 )
-        
-        # Specific verbosity, this will very likely be removed.
-        verbosityGroup.add_argument(
-                '-V'                                                    , 
-                dest    = 'specificVerbosity'                           , 
-                choices = [
-                    'in'        , 
-                    'out'       , 
-                    'listen'    , 
-                    'command'   , 
-                    'forward'   ,
-                    ]                                                   , 
-                nargs   = '+'                                           , 
-                help    = 'Verbosely output specific information.'      ,
-                )
-        
-        # Quite Mode
-        verbosityGroup.add_argument(
-                '-q'                                                                                                    , 
-                '--quite'                                                                                               , 
-                dest        = 'quite'                                                                                   , 
-                action      = 'store_true'                                                                              , 
-                help        = 'Run without any verbose output regardless of verbosity setting in configuration file.'   ,
-                )
-        
+   
         # Set argument values
         args = parser.parse_args()
 
@@ -283,48 +185,15 @@ class ParseArgs:
             # Load OTW Files into a list for the argData dictionary
             for arg in args.otw:
                 self.otwFileLocations.append( arg )
-        else:
-            # If there are no OTW files to load rules from then print help and exit
-            # If -d is passed then there will be no args.otw
-            exit(
-                    parser.print_help()
-                    )
+        elif args.daemon:
+            # Started up in daemon mode, load otw file locations from config file
+            for daemonFile in self.daemonFiles:
+                self.otwFileLocations.append( daemonFile )
+            # Create PID
+            with open( self.pidDir + "/oscwhispers.pid" , "w" ) as self.pidFile:
+                self.pidFile.write( self.pid )
     
-        # Specific verbosity flags
-        if args.specificVerbosity:
-            for verboseFlag in args.specificVerbosity:
-                if verboseFlag == 'in':
-                    self.verboseIncomingOsc     = True
-                if verboseFlag == 'out':
-                    self.verboseOutgoingOsc     = True
-                if verboseFlag == 'listen':
-                    self.verboseListenPort      = True
-                if verboseFlag == 'command':
-                    self.verboseCommandPort     = True
-                if verboseFlag == 'forward':
-                    self.verboseForwardingRules = True
-        
-        # Global verbosity flags
-        if args.verbose:
-            self.verboseIncomingOsc     = True
-            self.verboseOutgoingOsc     = True
-            self.verboseListenPort      = True
-            self.verboseCommandPort     = True
-            self.verboseForwardingRules = True
-        
-        # Quite mode
-        if args.quite:
-            self.verboseIncomingOsc     = False
-            self.verboseOutgoingOsc     = False
-            self.verboseListenPort      = False
-            self.verboseCommandPort     = False
-            self.verboseForwardingRules = False
-        
         return {
-                'verboseListenPort'         : self.verboseListenPort        ,
-                'verboseIncomingOsc'        : self.verboseIncomingOsc       ,
-                'verboseOutgoingOsc'        : self.verboseOutgoingOsc       ,
-                'verboseForwardingRules'    : self.verboseForwardingRules   ,
                 'otwFileLocations'          : self.otwFileLocations         ,
                 }
 
@@ -786,50 +655,3 @@ class OSC:
         # Return the a paths top level
         prefix = inpath.split( '/' )[ self.PATH_PREFIX_SPLIT_INDEX ]
         return prefix
-
-
-
-def verboseOutput():
-    # Needs to be repaired
-
-    '''
-    if verboseListenPort:
-        print('Listening on port: ', end = '')
-        print(serverListenPort)
-    '''
-
-    # Output Startup verbosity
-    if verboseForwardingRules:
-        print()
-        for eachRule in forwardingRule:
-            #make this output look nicer
-            print(
-                    'Path with prefix /'    , 
-                    end = ''                ,
-                    )
-
-            print(
-                    eachList[ OSC.PATH_INFO_LIST_INDEX ][ OSC.PATH_PREFIX_INDEX ]   , 
-                    end = ''                                                        ,
-                    )
-
-            if eachList[ OSC.PATH_INFO_LIST_INDEX ][ self.TRUNCATE_INDICATOR_INDEX ]:
-                print( 'will truncate path prefix.' )
-            else:
-                print( 'will not truncate path prefix.' )
-            print( 'Then it will forward to:' )
-            for target in eachList[ OSC.CLIENT_TARGET_LIST_INDEX ]:
-                print(
-                        'IP: '          , 
-                        end     = ''    ,
-                        )
-                print(
-                        oscMessageTargets[ target ][ OSC.IP_INDEX ] , 
-                        end = 'Port: '                              ,
-                        )
-                print(
-                        str(
-                            oscMessageTargets[ target ][ OSC.PORT_INDEX ]
-                            )
-                        )
-            print()

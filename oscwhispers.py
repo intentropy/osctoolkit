@@ -31,6 +31,7 @@ OSC Whispers
 from OSCToolkit.OSCWhispers     import *
 
 
+
 # Main Loop
 if __name__ == "__main__":
 
@@ -46,10 +47,6 @@ if __name__ == "__main__":
     arguments = ParseArgs( config.configData )
 
     # Load and parse OTW Files
-    '''
-        This will eventually depend on the mutually exclusive arguments of
-        -f and -d as to what list is used for OTWFiles()
-    '''
     otwFiles = OTWFiles(
             arguments.argData[
                 'otwFileLocations'
