@@ -31,10 +31,18 @@ OSC Whispers
 ## Import modules
 from .          import *
 from argparse   import ArgumentParser
+from getpass    import getuser
 from liblo      import Address, AddressError, send, Server, ServerError
 from sys        import exit
+from pathlib    import Path
 from os.path    import isfile
-from os         import getpid
+from os         import (
+        getpid  , access    , W_OK  ,
+        )
+from logging    import (
+        FileHandler , StreamHandler , Formatter , getLogger ,
+        DEBUG       , INFO          , WARNING   , ERROR     , CRITICAL  ,
+        )
 
 
 
@@ -42,7 +50,109 @@ from os         import getpid
 ToDo:
     * Add a command and control OSC Server for issuing commands to oscwhipsers using OSC messages
     * Add logging
+        - Needs to be a class
+        - Instantiate in oscwhispers.py
+        - Pass into all other instatianted objects (ConfigFile, OTWFiles, etc... )
+        - Logger class needs a method for adding a log
 '''
+
+class Logger:
+    """ 
+        Setup logging 
+    """
+
+    # Class variables and CONSTANTS
+    LOG_NAME        = "OSC Whispers log"
+    LOG_DIR         = "/var/log/osctoolkit/"
+    LOG_DIR_LOCAL   = "/home/" + getuser() + "/.osctoolkit/log/"
+    LOG_FILE        = "oscwhispers.log"
+    LOG_FORMAT      = "%(asctime)s %(levelname)s - %(message)s"
+    
+    # Find log location with write permisions
+    if access( LOG_DIR , W_OK ):
+        logDir      = LOG_DIR
+    else:
+        logDir      = LOG_DIR_LOCAL
+        Path( logDir ).mkdir( parents = True , exist_ok = True )
+
+    def __init__(
+            self                    ,
+            debugMode   = bool()    ,
+            ):
+        """
+            Initialization of logging
+        """
+        # Create logger
+        self.logger = getLogger( self.LOG_NAME )
+        if debugMode:
+            self.logger.setLevel( DEBUG )
+        else:
+            self.logger.setLevel( INFO )
+
+        # Create stream and file handler
+        self.streamHandler  = StreamHandler()
+        self.fileHandler    = FileHandler( self.logDir + self.LOG_FILE )
+
+        # Set Log levels
+        self.streamHandler.setLevel( WARNING )
+        if debugMode:
+            self.fileHandler.setLevel( DEBUG )
+        else:
+            self.fileHandler.setLevel( INFO )
+
+        # Create and set log formatter
+        self.formatter  = Formatter( self.LOG_FORMAT )
+        self.streamHandler.setFormatter( self.formatter )
+        self.fileHandler.setFormatter( self.formatter )
+
+        # Add handlers to the logger
+        self.logger.addHandler( self.streamHandler )
+        self.logger.addHandler( self.fileHandler )
+
+
+    def log(
+            self            ,
+            level   = int() ,
+            message = str() ,
+            ):
+        """
+            Create a log entry
+
+            Log Levels:
+                0   - Debug
+                1   - Info
+                2   - Warning
+                3   - Errori
+                4   - Critical
+
+      
+            Guide (from Python logging documentation):
+                DEBUG 	    Detailed information, typically of interest only when 
+                            diagnosing problems.
+                
+                INFO 	    Confirmation that things are working as expected.
+                
+                WARNING     An indication that something unexpected happened, or 
+                            indicative of some problem in the near future (e.g. ‘disk space low’). 
+                            The software is still working as expected.
+                
+                ERROR 	    Due to a more serious problem, the software has not been 
+                            able to perform some function.
+
+                CRITICAL    A serious error, indicating that the program itself may be 
+                            unable to continue running.
+        """
+        # Maybe create a logger error to raise if value < 0 or > 4, and log it critical
+        self.logLevels  = {
+                0   : "debug"       ,
+                1   : "info"        ,
+                2   : "warning"     ,
+                3   : "error"       ,
+                4   : "critical"    ,
+                }
+        exec(
+                "self.logger." + self.logLevels[ level ] + "(\"" + message + "\")"
+                )
 
 
 ## Load config file and parse arguments
@@ -59,12 +169,16 @@ class ConfigFile:
     def __init__(
             self                , 
             configFileLocations ,
+            logger              ,
             ):
         """ Initialization procedure for ConfigFile. """
 
         # Declare config arguments with default values defaults
         self.serverListenPort       = 9000
         self.daemonFiles            = []
+
+        # Set up logger
+        self.logger = logger
 
         # Run initialization fucntions
         self.configData = self.parseConfigFile(
@@ -135,6 +249,7 @@ class ParseArgs:
     def __init__(
             self        , 
             configData  ,
+            logger      ,
             ):
         # Declare argument variables with default values
         self.daemonFiles            = configData[ 'daemonFiles' ]
@@ -145,7 +260,9 @@ class ParseArgs:
                 getpid()
                 )
 
-        
+        # Set up logger
+        self.logger = logger
+
         # Run initilization functions
         self.argData = self.parse()
 
@@ -233,9 +350,13 @@ class OTWFiles:
     def __init__(
             self        , 
             otwFiles    ,
+            logger      ,
             ):
         # Declare variables for instatiated object
         oscClients = []
+
+        # Setup the logger
+        self.logger = logger
 
         # Run initialization functions
         self.otwFileData = self.parseOtwFiles(
@@ -255,9 +376,8 @@ class OTWFiles:
         otwLines = []
         for otwFileName in otwFiles:
             # File load vars
-            otwFile = open( otwFileName, 'r' )      # ToDo:  Use With!!!
-            otwLines += otwFile.read().split( '\n' )
-            otwFile.close()
+            with open( otwFileName, 'r' ) as otwFile:
+                otwLines += otwFile.read().split( '\n' )
         return otwLines
 
     
@@ -458,6 +578,8 @@ class OTWFiles:
                                 ]
                             )
 
+        # Decode the rules, and log as info here
+
         return {
                 'forwardingRules'   : forwardingRules   ,
                 'oscTargets'        : oscTargets        ,
@@ -492,9 +614,13 @@ class OSC:
             serverListenPort    , 
             forwardingRules     , 
             oscTargets          ,
+            logger              ,
             ):
         # Declare instatiation variables
         self.forwardingRules = forwardingRules
+
+        # Set up logger
+        self.logger = logger
 
         # OSC target information (enumerate for client IDs)
         self.oscTargets = []

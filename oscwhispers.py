@@ -31,9 +31,15 @@ OSC Whispers
 from OSCToolkit.OSCWhispers     import *
 
 
+# Declare variables and CONSTANTS
+debugMode = False
+
 
 # Main Loop
 if __name__ == "__main__":
+
+    # Setup logfile
+    logger = Logger( debugMode )
 
     # Load and parse configuration file
     CONFIG_FILE_LOCATIONS = [
@@ -41,23 +47,32 @@ if __name__ == "__main__":
             '/home/$USER/.config/osctoolkit.conf'   , 
             '/etc/osctoolkit.conf'                  ,
             ]
-    config = ConfigFile( CONFIG_FILE_LOCATIONS )
+    config = ConfigFile( 
+            CONFIG_FILE_LOCATIONS   ,
+            logger                  ,
+            )
 
     # Parse command lie arguments
-    arguments = ParseArgs( config.configData )
+    arguments = ParseArgs( 
+            config.configData   ,
+            logger              ,
+            )
 
     # Load and parse OTW Files
     otwFiles = OTWFiles(
             arguments.argData[
                 'otwFileLocations'
                 ]   ,
+            logger  ,
             )
 
     osc = OSC(
             config.configData[ 'serverListenPort' ]     ,
             otwFiles.otwFileData[ 'forwardingRules' ]   ,
             otwFiles.otwFileData[ 'oscTargets' ]        ,
+            logger                                      ,
             )
+
 
     ## Main Loop
     while True:
