@@ -32,7 +32,6 @@ OSC Whispers
 from .          import *
 from argparse   import ArgumentParser
 from getpass    import getuser
-from liblo      import Address, AddressError, send, Server, ServerError
 from sys        import exit
 from pathlib    import Path
 from os.path    import isfile
@@ -44,7 +43,10 @@ from logging    import (
         DEBUG       , INFO          , WARNING   , ERROR     , CRITICAL  ,
         )
 
-
+# This should import inside of the OSC class, and use exception handling
+#   This will allow for a critical dependancy error to be logged if
+#   python-pyliblo is not installed
+from liblo      import Address, AddressError, send, Server, ServerError
 
 '''
 ToDo:
@@ -59,14 +61,43 @@ ToDo:
 class Logger:
     """ 
         Setup logging 
+
+        There should be 3 logs set up
+        error_log   - Critical, Error, Warning
+            - Both File and Stream logging
+
+        main_log    - Info
+            - File Log Only
+            - Info logs should include displaying all the loaded rules
+            - You should be able to turn on and off osc message forwards
+                ~ Logger.messages = True
+                ~ OSC Message logging could potentially make huge logs
+                    i.e. changing a volume knob where a floating point changes rapidly
+                         over a log period of time
+
+        debug_log   - Debug
+            - Stream logger only
+            - This should be turned on via the configuration file
+            - There should be an attribute you can set for turning this on
+                ~ Logger.debug = True
+            - This should be turned on and off in the configuration file
+
+        for turning off logging try this:
+            logger.propagate = False
     """
 
     # Class variables and CONSTANTS
-    LOG_NAME        = "OSC Whispers log"
-    LOG_DIR         = "/var/log/osctoolkit/"
-    LOG_DIR_LOCAL   = "/home/" + getuser() + "/.osctoolkit/log/"
-    LOG_FILE        = "oscwhispers.log"
-    LOG_FORMAT      = "%(asctime)s %(levelname)s - %(message)s"
+    LOG_DIR             = "/var/log/osctoolkit/"
+    LOG_DIR_LOCAL       = "/home/" + getuser() + "/.osctoolkit/log/"
+    ERROR_LOG_NAME      = "Error"
+    ERROR_LOG_FILE      = "oscwhispers.error_log"
+    MAIN_LOG_NAME       = "Main"
+    MAIN_LOG_FILE       = "oscwhispers.main_log"
+    DEBUG_LOG_NAME      = "Debug"
+    FILE_LOG_FORMAT     = "%(asctime)s %(levelname)s - %(message)s"
+    STREAM_LOG_FORMAT   = "%(name)s: %(levelname)s - %(message)s"
+
+    debugMode       = False
     
     # Find log location with write permisions
     if access( LOG_DIR , W_OK ):
@@ -75,41 +106,57 @@ class Logger:
         logDir      = LOG_DIR_LOCAL
         Path( logDir ).mkdir( parents = True , exist_ok = True )
 
-    def __init__(
-            self                    ,
-            debugMode   = bool()    ,
-            ):
+    def __init__( self ):
         """
             Initialization of logging
         """
         # Create logger
-        self.logger = getLogger( self.LOG_NAME )
-        if debugMode:
-            self.logger.setLevel( DEBUG )
-        else:
-            self.logger.setLevel( INFO )
+        self.errorLog   = getLogger( self.ERROR_LOG_NAME )
+        self.mainLog    = getLogger( self.MAIN_LOG_NAME )
+        self.debugLog   = getLogger( self.DEBUG_LOG_NAME )
+       
+        # Set upper log level
+        self.errorLog.setLevel( WARNING )
+        self.mainLog.setLevel( INFO )
+        self.debugLog.setLevel( DEBUG )
 
-        # Create stream and file handler
-        self.streamHandler  = StreamHandler()
-        self.fileHandler    = FileHandler( self.logDir + self.LOG_FILE )
+        # Create stream handlers ( error and debug )
+        self.errorStreamHandler = StreamHandler()
+        self.debugStreamHandler = StreamHandler()
+       
+        # Create file handlers ( error and main )
+        self.errorFileHandler   = FileHandler( self.logDir + self.ERROR_LOG_FILE )
+        self.mainFileHandler    = FileHandler( self.logDir + self.MAIN_LOG_FILE )
 
-        # Set Log levels
-        self.streamHandler.setLevel( WARNING )
-        if debugMode:
-            self.fileHandler.setLevel( DEBUG )
-        else:
-            self.fileHandler.setLevel( INFO )
+        # Set stream Log levels
+        self.errorStreamHandler.setLevel( WARNING )
+        self.debugStreamHandler.setLevel( DEBUG )
 
-        # Create and set log formatter
-        self.formatter  = Formatter( self.LOG_FORMAT )
-        self.streamHandler.setFormatter( self.formatter )
-        self.fileHandler.setFormatter( self.formatter )
+        # Set file Log levels    
+        self.errorFileHandler.setLevel( WARNING )
+        self.mainFileHandler.setLevel( INFO )
+
+        # Set log formats
+        self.errorStreamHandler.setFormatter(
+                Formatter( self.STREAM_LOG_FORMAT )
+                )
+        self.debugStreamHandler.setFormatter(
+                Formatter( self.STREAM_LOG_FORMAT )
+                )
+        self.errorFileHandler.setFormatter(
+                Formatter( self.FILE_LOG_FORMAT )
+                )
+        self.mainFileHandler.setFormatter(
+                Formatter( self.FILE_LOG_FORMAT )
+                )
 
         # Add handlers to the logger
-        self.logger.addHandler( self.streamHandler )
-        self.logger.addHandler( self.fileHandler )
+        self.errorLog.addHandler( self.errorStreamHandler )
+        self.errorLog.addHandler( self.errorFileHandler )
+        self.mainLog.addHandler( self.mainFileHandler )
+        self.debugLog.addHandler( self.debugStreamHandler )
 
-
+    
     def log(
             self            ,
             level   = int() ,
@@ -122,7 +169,7 @@ class Logger:
                 0   - Debug
                 1   - Info
                 2   - Warning
-                3   - Errori
+                3   - Error
                 4   - Critical
 
       
@@ -142,16 +189,32 @@ class Logger:
                 CRITICAL    A serious error, indicating that the program itself may be 
                             unable to continue running.
         """
-        # Maybe create a logger error to raise if value < 0 or > 4, and log it critical
+        # Class method constants
+        LOG_LEVELS_LEVEL_INDEX  = 0
+        LOG_LEVELS_LOG_INDEX    = 1
+
+        # Define numeric levels and corrisponding logs
         self.logLevels  = {
-                0   : "debug"       ,
-                1   : "info"        ,
-                2   : "warning"     ,
-                3   : "error"       ,
-                4   : "critical"    ,
+                0   : ( "debug"     , "debug" ) ,
+                1   : ( "info"      , "main" )  ,
+                2   : ( "warning"   , "error" ) ,
+                3   : ( "error"     , "error" ) ,
+                4   : ( "critical"  , "error" ) ,
                 }
+        if level not in self.logLevels:
+            # raise and log logger exception as error and debug
+            pass
+        if not( level ) and not( self.debugMode ):
+            # Debug mode is turned off, do not log.
+            return
         exec(
-                "self.logger." + self.logLevels[ level ] + "(\"" + message + "\")"
+                "self."                                             + 
+                self.logLevels[ level ][ LOG_LEVELS_LOG_INDEX ]     + 
+                "Log."                                              + 
+                self.logLevels[ level ][ LOG_LEVELS_LEVEL_INDEX ]   + 
+                "(\""                                               + 
+                message                                             + 
+                "\")"
                 )
 
 
@@ -254,8 +317,16 @@ class ParseArgs:
         # Declare argument variables with default values
         self.daemonFiles            = configData[ 'daemonFiles' ]
         self.otwFileLocations       = []
+        
+        '''
+            A pid file is only created if OSC Whispers is run in daemon mode.
+            Daemon mod can only be run as root; therefore, the
+                directory for writing the pid file should be in /var/run
 
-        self.pidDir = "/tmp"
+            An exception should be raised and logged if Daemon mode is invoked without
+                the proper level of privileges.
+        '''
+        self.pidDir = "/var/run"
         self.pid    = str(
                 getpid()
                 )
@@ -577,7 +648,7 @@ class OTWFiles:
                                 idList                  ,
                                 ]
                             )
-
+        
         # Decode the rules, and log as info here
 
         return {

@@ -31,15 +31,12 @@ OSC Whispers
 from OSCToolkit.OSCWhispers     import *
 
 
-# Declare variables and CONSTANTS
-debugMode = False
-
 
 # Main Loop
 if __name__ == "__main__":
 
     # Setup logfile
-    logger = Logger( debugMode )
+    logger = Logger()
 
     # Load and parse configuration file
     CONFIG_FILE_LOCATIONS = [
