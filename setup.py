@@ -10,7 +10,8 @@ setup(
         version             = '0.0.2'                               ,
         author              = 'Shane Hutter'                        ,
         author_email        = 'shane@intentropycs.com'              ,
-        description         = 'Python wrapper module for xdotool'   ,
+        description         = 'A collection of tools for using Open \
+                Sound Control'                                      ,
         long_description    = open( 'README.md' ).read()            ,
         license             = open( 'LICENSE' ).read()              ,
         packages            = [ 'OSCToolkit' , ]                    ,
