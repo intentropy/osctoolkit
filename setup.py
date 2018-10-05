@@ -21,6 +21,7 @@ setup(
                     'oscshout'      ,
                     'oscwhispers'   ,
                     ]                                   ,
+                )   ,   
             ( '/etc'                    ,   # Configuration files
                 [ 'osctoolkit.conf' , ]                 ,
                 )   ,
@@ -29,7 +30,7 @@ setup(
                 )   ,
             ( '/usr/lib/systemd/user'   ,   # Systemd units/timers
                 [ 'systemd/oscwhispersd.service' , ]    ,
-                )   ,
+                )   ,   
             ]                                                       ,
 
         )
