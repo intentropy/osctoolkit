@@ -29,7 +29,7 @@ setup(
             ( '/usr/share/osctoolkit'   ,   # User resources
                 [ 'example.otw' , ]                     ,
                 )   ,
-            ( '/usr/lib/systemd/user'   ,   # Systemd units/timers
+            ( '/lib/systemd/system'   ,   # Systemd units/timers
                 [ 'systemd/oscwhispersd.service' , ]    ,
                 )   ,   
             ]                                                       ,
