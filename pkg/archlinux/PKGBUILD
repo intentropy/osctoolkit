@@ -1,0 +1,30 @@
+# Maintainer: Shane Hutter <shane@intentropycs.com>
+
+pkgname=osctoolkit
+_name="osctoolkit"
+pkgdesc="A collection of tools for using Open Sound Control"
+pkgver=0.0.2
+pkgrel=2
+arch=('any')
+url="https://github.com/ShaneHutter/"
+license=('GPL3')
+provides=('osctoolkit')
+
+depends=('python' 'python-pyliblo')
+makedepends=('git')
+optdepends=('python-mido: OSC to MIDI conversion')
+
+source=("git+${url}${_name}.git")
+sha512sums=('SKIP')
+
+backup=("etc/osctoolkit.conf")
+
+build() {
+	cd ${srcdir}/${_name}
+	python "${srcdir}/${_name}/setup.py" bdist
+}
+
+package() {
+	cd ${srcdir}/${_name}
+	python "${srcdir}/${_name}/setup.py" install --root="${pkgdir}/" --optimize=1 --skip-build
+}
